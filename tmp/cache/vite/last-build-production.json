@@ -1,0 +1,7 @@
+{
+  "success": true,
+  "errors": "DEPRECATION WARNING [legacy-js-api]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.\n\nMore info: https://sass-lang.com/d/legacy-js-api\n\n",
+  "timestamp": "2025-08-01 00:07:57",
+  "vite_ruby": "3.9.2",
+  "digest": "5eb651987184d0b9a6695138c6158a439f71c206"
+}
