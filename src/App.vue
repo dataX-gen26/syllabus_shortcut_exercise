@@ -267,13 +267,13 @@ body {
   justify-content: center;
   align-items: center;
   height: 100%;
-  margin: 50px;
+  //   margin: 50px;
 }
 
 .container {
   text-align: center;
   background-color: white;
-  padding: 40px;
+  padding: 20px;
   border-radius: 10px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   width: 600px;
@@ -285,11 +285,11 @@ body {
 }
 
 #quiz-area {
-  margin: 30px 0;
-  padding: 20px;
+  margin: 10px;
+  padding: 10px;
   border: 2px solid #ddd;
   border-radius: 8px;
-  min-height: 150px;
+  min-height: 100px;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -297,9 +297,9 @@ body {
 }
 
 #question {
-  font-size: 24px;
+  font-size: 20px;
   font-weight: bold;
-  margin-bottom: 20px;
+  margin-bottom: 10px;
 }
 
 #preview-area {
@@ -312,7 +312,7 @@ body {
     align-items: center;
 
     img {
-      width: 500px;
+      width: 400px;
       height: auto;
       border: 2px solid #ffffff;
       border-radius: 15px;
@@ -405,7 +405,7 @@ body {
 }
 
 button {
-  padding: 10px 20px;
+  padding: 10px 15px;
   font-size: 16px;
   cursor: pointer;
   border: none;
@@ -413,7 +413,7 @@ button {
   color: white;
   background-color: #1a73e8;
   transition: background-color 0.3s;
-  margin-top: 10px;
+  //   margin-top: 10px;
 
   &:hover {
     background-color: #1558b8;
@@ -422,7 +422,7 @@ button {
 
 #reveal-button {
   background-color: #f44336;
-  margin-left: 10px;
+  //   margin-left: 10px;
 
   &:hover {
     background-color: #d32f2f;
