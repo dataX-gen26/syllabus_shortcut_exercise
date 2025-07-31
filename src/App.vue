@@ -1,48 +1,55 @@
 <template lang="pug">
-#app.container
-  h1 スプレッドシート ショートカット演習
-  p お題の操作を行うショートカットキーを押してください。
+.wrapper
+  .container
+    h1 スプレッドシート ショートカット演習
+    p 問題の操作を行うショートカットキーを押してください。
 
-  #quiz-area(v-show="!gameFinished")
-    #question {{ questionText }}
-    #feedback-container
-      #key-input-container
-        span.correct-text(:class="{ visible: showCorrectAnimation && !isRevealAnswer }") 正解！🎉
-        #key-input-display(:class="{ correct: showCorrectAnimation }")
-          template(v-for="(key, index) in currentCorrectKeys")
-            span.key-box(v-html="showCorrectAnimation || pressedKeys.has(key) ? key : '&nbsp;'")
-            span.plus(v-if="index < currentCorrectKeys.length - 1") +
+    #quiz-area(v-show="isPlaying && !gameFinished")
+        #question {{ questionText }}
+        #feedback-container
+          #key-input-container
+            span.correct-text(:class="{ visible: showCorrectAnimation && !isRevealAnswer }" v-if="!isRevealAnswer") 正解！🎉
+            #key-input-display(:class="{ correct: showCorrectAnimation }")
+            template(v-for="(key, index) in currentCorrectKeys")
+                span.key-box(v-html="showCorrectAnimation || pressedKeys.has(key) ? key : '&nbsp;'")
+                span.plus(v-if="index < currentCorrectKeys.length - 1") +
 
-  #score-area(v-show="gameFinished")
-    h2 結果
-    p 最終スコア: 
-      strong#final-score {{ finalScore }}
-    p クリアタイム: 
-      span#clear-time {{ timer.toFixed(2) }} 秒
-    p ミスタイプ数: 
-      span#final-miss-count {{ missCount }} 回
-    p 正解を見た回数: 
-      span#reveal-count {{ revealCount }} 回
+    #score-area(v-show="gameFinished")
+        h2 結果
+        p 最終スコア: 
+            strong#final-score {{ finalScore }}
+        p クリアタイム: 
+            span#clear-time {{ timer.toFixed(2) }} 秒
+        p ミスタイプ数: 
+            span#final-miss-count {{ missCount }} 回
+        p 正解を見た回数: 
+            span#reveal-count {{ revealCount }} 回
 
-  .status-area
-    div 時間: 
-      span#timer {{ timer.toFixed(2) }} 秒
-    div ミスタイプ: 
-      span#miss-count {{ missCount }} 回
+    .status-area
+        div 時間: 
+            span#timer {{ timer.toFixed(2) }} 秒
+        div ミスタイプ: 
+            span#miss-count {{ missCount }} 回  
+    button#start-button(@click="startGame", v-show="!isPlaying") {{ startButtonText }}
+    button#reveal-button(@click="revealAnswer", v-show="isPlaying", :disabled="showCorrectAnimation") 正解を見る
 
-  button#start-button(@click="startGame", v-show="!isPlaying") {{ startButtonText }}
-  button#reveal-button(@click="revealAnswer", v-show="isPlaying", :disabled="showCorrectAnimation") 正解を見る
+  #preview-area(v-if="currentQuestionId && isPlaying")
+    .preview-image-container(v-for="(image, index) in previewImages", :key="index")
+        img(:src="image", alt="プレビュー画像")
+        span.arrow(v-if="index < previewImages.length - 1") →
 
 </template>
 
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 
+const imageModules = import.meta.glob('./assets/img/*.png', { eager: true })
+
 const shortcuts = ref([
   { id: 1, name: '太字にする', keys: ['Control', 'b'] },
-  { id: 2, name: 'コピー', keys: ['Control', 'c'] },
-  { id: 3, name: '貼り付け', keys: ['Control', 'v'] },
-  { id: 4, name: '切り取り', keys: ['Control', 'x'] },
+  { id: 2, name: 'コピーする', keys: ['Control', 'c'] },
+  { id: 3, name: '貼り付ける', keys: ['Control', 'v'] },
+  { id: 4, name: '切り取る', keys: ['Control', 'x'] },
   //   { id: 5, name: 'すべて選択', keys: ['Control', 'a'] },
   //   { id: 6, name: '元に戻す', keys: ['Control', 'z'] },
   //   { id: 7, name: '前に戻す', keys: ['Control', 'y'] },
@@ -65,7 +72,23 @@ const questionText = computed(() => {
   if (gameFinished.value || !shortcuts.value[currentQuestionIndex.value]) {
     return 'ここに問題文が表示されます'
   }
-  return `お題: ${shortcuts.value[currentQuestionIndex.value].name}`
+  return `問題: ${shortcuts.value[currentQuestionIndex.value].name}`
+})
+
+const currentQuestionId = computed(() => {
+  if (gameFinished.value || !shortcuts.value[currentQuestionIndex.value]) {
+    return null
+  }
+  return shortcuts.value[currentQuestionIndex.value].id
+})
+
+const previewImages = computed(() => {
+  if (!currentQuestionId.value) return []
+  const questionId = currentQuestionId.value
+  return Object.keys(imageModules)
+    .filter((path) => path.split('/').pop().startsWith(`q${questionId}_`))
+    .sort()
+    .map((path) => imageModules[path].default)
 })
 
 const currentCorrectKeys = computed(() => {
@@ -196,6 +219,7 @@ function nextQuestion() {
   currentQuestionIndex.value++
   pressedKeys.clear()
   showCorrectAnimation.value = false
+  isRevealAnswer.value = false
   setQuestion()
   startTimer()
 }
@@ -237,6 +261,14 @@ body {
   color: #333;
 }
 
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+}
+
 .container {
   text-align: center;
   background-color: white;
@@ -244,6 +276,7 @@ body {
   border-radius: 10px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   width: 600px;
+  justify-content: center;
 
   h1 {
     color: #1a73e8;
@@ -266,6 +299,31 @@ body {
   font-size: 24px;
   font-weight: bold;
   margin-bottom: 20px;
+}
+
+#preview-area {
+  display: flex;
+  align-items: center;
+  margin: 20px;
+
+  .preview-image-container {
+    display: flex;
+    align-items: center;
+
+    img {
+      width: 500px;
+      height: auto;
+      border: 2px solid #ffffff;
+      border-radius: 15px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .arrow {
+      margin: 0 10px;
+      font-size: 24px;
+      font-weight: bold;
+    }
+  }
 }
 
 #feedback-container {
