@@ -11,7 +11,7 @@
             span.correct-text(:class="{ visible: showCorrectAnimation && !isRevealAnswer }" v-if="!isRevealAnswer") 正解！🎉
             #key-input-display(:class="{ correct: showCorrectAnimation }")
             template(v-for="(key, index) in currentCorrectKeys")
-                span.key-box(v-html="showCorrectAnimation || pressedKeys.has(key) ? key : '&nbsp;'")
+                span.key-box(v-html="showCorrectAnimation || pressedKeys.has(key) ? formatKeyForDisplay(key) : '&nbsp;'")
                 span.plus(v-if="index < currentCorrectKeys.length - 1") +
 
     #score-area(v-show="gameFinished")
@@ -45,15 +45,18 @@ import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 
 const imageModules = import.meta.glob('./assets/img/*.png', { eager: true })
 
+const isMac = /Mac|iPod|iPhone|iPad/.test(navigator.platform);
+const modifierKey = isMac ? 'Meta' : 'Control';
+
 const shortcuts = ref([
-  { id: 1, name: '太字にする', keys: ['Control', 'b'] },
-  { id: 2, name: 'コピーする', keys: ['Control', 'c'] },
-  { id: 3, name: '貼り付ける', keys: ['Control', 'v'] },
-  { id: 4, name: '切り取る', keys: ['Control', 'x'] },
-  //   { id: 5, name: 'すべて選択', keys: ['Control', 'a'] },
-  //   { id: 6, name: '元に戻す', keys: ['Control', 'z'] },
-  //   { id: 7, name: '前に戻す', keys: ['Control', 'y'] },
-  //   { id: 8, name: '検索', keys: ['Control', 'f'] },
+  { id: 1, name: '太字にする', keys: [modifierKey, 'b'] },
+  { id: 2, name: 'コピーする', keys: [modifierKey, 'c'] },
+  { id: 3, name: '貼り付ける', keys: [modifierKey, 'v'] },
+  { id: 4, name: '切り取る', keys: [modifierKey, 'x'] },
+  //   { id: 5, name: 'すべて選択', keys: [modifierKey, 'a'] },
+  //   { id: 6, name: '元に戻す', keys: [modifierKey, 'z'] },
+  //   { id: 7, name: '前に戻す', keys: [modifierKey, 'y'] },
+  //   { id: 8, name: '検索', keys: [modifierKey, 'f'] },
 ])
 
 const currentQuestionIndex = ref(0)
@@ -110,6 +113,12 @@ const finalScore = computed(() => {
 const startButtonText = computed(() => {
   return gameFinished.value ? 'もう一度挑戦する' : 'スタート'
 })
+
+function formatKeyForDisplay(key) {
+  if (isMac && key === 'Meta') return '⌘';
+  if (!isMac && key === 'Control') return 'Ctrl';
+  return key.charAt(0).toUpperCase() + key.slice(1);
+}
 
 function startGame() {
   isPlaying.value = true
