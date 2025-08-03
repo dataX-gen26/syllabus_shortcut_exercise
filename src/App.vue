@@ -4,48 +4,54 @@
     h1 スプレッドシート ショートカット演習
     p 問題の操作を行うショートカットキーを押してください。
 
-    #quiz-area(v-show="isPlaying && !gameFinished")
-        #question {{ questionText }}
-        #feedback-container
-          #key-input-container
-            span.correct-text(:class="{ visible: showCorrectAnimation && !isRevealAnswer }" v-if="!isRevealAnswer") 正解！🎉
-            #key-input-display(:class="{ correct: showCorrectAnimation }")
-            template(v-for="(key, index) in currentCorrectKeys")
-                span.key-box(v-html="showCorrectAnimation || pressedKeys.has(key) ? formatKeyForDisplay(key) : '&nbsp;'")
-                span.plus(v-if="index < currentCorrectKeys.length - 1") +
+    QuizArea(
+      :isPlaying="isPlaying",
+      :gameFinished="gameFinished",
+      :questionText="questionText",
+      :showCorrectAnimation="showCorrectAnimation",
+      :isRevealAnswer="isRevealAnswer",
+      :currentCorrectKeys="currentCorrectKeys",
+      :pressedKeys="pressedKeys",
+      :isMac="isMac"
+    )
 
-    #score-area(v-show="gameFinished")
-        h2 結果
-        p 最終スコア: 
-            strong#final-score {{ finalScore }}
-        p クリアタイム: 
-            span#clear-time {{ timer.toFixed(2) }} 秒
-        p ミスタイプ数: 
-            span#final-miss-count {{ missCount }} 回
-        p 正解を見た回数: 
-            span#reveal-count {{ revealCount }} 回
+    ScoreArea(
+      :gameFinished="gameFinished",
+      :finalScore="finalScore",
+      :timer="timer",
+      :missCount="missCount",
+      :revealCount="revealCount"
+    )
 
-    .status-area
-        div 時間: 
-            span#timer {{ timer.toFixed(2) }} 秒
-        div ミスタイプ: 
-            span#miss-count {{ missCount }} 回  
-    button#start-button(@click="startGame", v-show="!isPlaying") {{ startButtonText }}
-    button#reveal-button(@click="revealAnswer", v-show="isPlaying", :disabled="showCorrectAnimation") 正解を見る
+    StatusArea(:timer="timer", :missCount="missCount")
 
-  #preview-area(v-if="currentQuestionId && isPlaying")
-    .preview-image-container(v-for="(image, index) in previewImages", :key="index")
-        img(:src="image", alt="プレビュー画像")
-        span.arrow(v-if="index < previewImages.length - 1") →
+    ControlButtons(
+      :isPlaying="isPlaying",
+      :showCorrectAnimation="showCorrectAnimation",
+      :startButtonText="startButtonText",
+      @startGame="startGame",
+      @revealAnswer="revealAnswer"
+    )
+
+  PreviewArea(
+    :currentQuestionId="currentQuestionId",
+    :isPlaying="isPlaying",
+    :previewImages="previewImages"
+  )
 
 </template>
 
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import QuizArea from './view/components/QuizArea.vue'
+import ScoreArea from './view/components/ScoreArea.vue'
+import StatusArea from './view/components/StatusArea.vue'
+import ControlButtons from './view/components/ControlButtons.vue'
+import PreviewArea from './view/components/PreviewArea.vue'
 
 const imageModules = import.meta.glob('./assets/img/*.png', { eager: true })
 
-const isMac = /Mac|iPod|iPhone|iPad/.test(navigator.platform);
+const isMac = /Mac|iPod|iPhone|iPad/.test(navigator.platform)
 
 const shortcuts = ref([
   { id: 1, name: '太字にする', keys: ['mod', 'b'] },
@@ -110,19 +116,6 @@ const startButtonText = computed(() => {
   return gameFinished.value ? 'もう一度挑戦する' : 'スタート'
 })
 
-function formatKeyForDisplay(key) {
-    switch (key) {
-        case 'mod':
-            return isMac ? '⌘' : 'Ctrl';
-        case 'alt':
-            return isMac ? '⌥' : 'Alt';
-        case 'shift':
-            return 'Shift';
-        default:
-            return key.charAt(0).toUpperCase() + key.slice(1);
-    }
-}
-
 function startGame() {
   isPlaying.value = true
   gameFinished.value = false
@@ -161,57 +154,57 @@ function setQuestion() {
 }
 
 function handleKeyDown(e) {
-    if (!isPlaying.value || showCorrectAnimation.value) return;
-    e.preventDefault();
+  if (!isPlaying.value || showCorrectAnimation.value) return
+  e.preventDefault()
 
-    // Update pressedKeys for display
-    pressedKeys.value.add(e.key.toLowerCase());
-    if (e.metaKey) pressedKeys.value.add('mod');
-    if (e.ctrlKey) pressedKeys.value.add(isMac ? 'Control' : 'mod'); // Distinguish Mac's Ctrl
-    if (e.altKey) pressedKeys.value.add('alt');
-    if (e.shiftKey) pressedKeys.value.add('shift');
+  // Update pressedKeys for display
+  pressedKeys.value.add(e.key.toLowerCase())
+  if (e.metaKey) pressedKeys.value.add('mod')
+  if (e.ctrlKey) pressedKeys.value.add(isMac ? 'Control' : 'mod') // Distinguish Mac's Ctrl
+  if (e.altKey) pressedKeys.value.add('alt')
+  if (e.shiftKey) pressedKeys.value.add('shift')
 
-    checkAnswer(e);
+  checkAnswer(e)
 }
 
 function handleKeyUp(e) {
-    if (!isPlaying.value) return;
-    pressedKeys.value.clear(); // Clear display keys on any key up
+  if (!isPlaying.value) return
+  pressedKeys.value.clear() // Clear display keys on any key up
 }
 
 function checkAnswer(e) {
-    const requiredKeys = new Set(currentCorrectKeys.value);
-    const mainKey = [...requiredKeys].find(k => !['mod', 'alt', 'shift', 'Control'].includes(k));
+  const requiredKeys = new Set(currentCorrectKeys.value)
+  const mainKey = [...requiredKeys].find((k) => !['mod', 'alt', 'shift', 'Control'].includes(k))
 
-    // Check for the main, non-modifier key
-    if (e.key.toLowerCase() !== mainKey) {
-        missCount.value++;
-        return;
-    }
+  // Check for the main, non-modifier key
+  if (e.key.toLowerCase() !== mainKey) {
+    missCount.value++
+    return
+  }
 
-    // Check modifier keys
-    const modPressed = isMac ? e.metaKey : e.ctrlKey;
-    const altPressed = e.altKey;
-    const shiftPressed = e.shiftKey;
-    // Note: Mac's Control key can be handled separately if needed
+  // Check modifier keys
+  const modPressed = isMac ? e.metaKey : e.ctrlKey
+  const altPressed = e.altKey
+  const shiftPressed = e.shiftKey
+  // Note: Mac's Control key can be handled separately if needed
 
-    const correctModifiers = 
-        (requiredKeys.has('mod') === modPressed) &&
-        (requiredKeys.has('alt') === altPressed) &&
-        (requiredKeys.has('shift') === shiftPressed);
+  const correctModifiers =
+    requiredKeys.has('mod') === modPressed &&
+    requiredKeys.has('alt') === altPressed &&
+    requiredKeys.has('shift') === shiftPressed
 
-    if (correctModifiers) {
-        stopTimer();
-        showCorrectAnimation.value = true;
+  if (correctModifiers) {
+    stopTimer()
+    showCorrectAnimation.value = true
 
-        if (isLastQuestion.value) {
-            setTimeout(endGame, 500);
-        } else {
-            setTimeout(nextQuestion, 500);
-        }
+    if (isLastQuestion.value) {
+      setTimeout(endGame, 500)
     } else {
-        missCount.value++;
+      setTimeout(nextQuestion, 500)
     }
+  } else {
+    missCount.value++
+  }
 }
 
 function revealAnswer() {
@@ -307,149 +300,9 @@ body {
   }
 }
 
-#quiz-area {
-  margin: 10px;
-  padding: 10px;
-  border: 2px solid #ddd;
-  border-radius: 8px;
-  min-height: 100px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-}
-
-#question {
-  font-size: 20px;
-  font-weight: bold;
-  margin-bottom: 10px;
-}
-
-#preview-area {
-  display: flex;
-  align-items: center;
-  margin: 20px;
-
-  .preview-image-container {
-    display: flex;
-    align-items: center;
-
-    img {
-      width: 400px;
-      height: auto;
-      border: 2px solid #ffffff;
-      border-radius: 15px;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    }
-
-    .arrow {
-      margin: 0 10px;
-      font-size: 24px;
-      font-weight: bold;
-    }
-  }
-}
-
-#feedback-container {
-  height: 60px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
 #result {
   font-size: 24px;
   font-weight: bold;
-}
-
-#key-input-container {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.correct-text {
-  position: absolute;
-  left: -50%;
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: 20px;
-  font-weight: bold;
-  color: green;
-  margin-right: 15px;
-  visibility: hidden;
-
-  &.visible {
-    visibility: visible;
-  }
-}
-
-#key-input-display {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  &.correct .key-box {
-    border-color: green;
-    background-color: #e8f5e9;
-  }
-}
-
-.key-box {
-  display: inline-block;
-  border: 2px solid #ccc;
-  border-radius: 6px;
-  padding: 10px 20px;
-  min-width: 40px;
-  min-height: 30px;
-  line-height: 30px;
-  text-align: center;
-  background-color: #f9f9f9;
-  font-size: 22px;
-  font-family: 'Helvetica Neue', Arial, sans-serif;
-  font-weight: bold;
-  color: #333;
-  transition: all 0.2s ease;
-}
-
-.plus {
-  margin: 0 10px;
-  font-weight: bold;
-  font-size: 24px;
-  color: #555;
-}
-
-.status-area {
-  display: flex;
-  justify-content: space-around;
-  margin: 20px 0;
-  font-size: 18px;
-}
-
-button {
-  padding: 10px 15px;
-  font-size: 16px;
-  cursor: pointer;
-  border: none;
-  border-radius: 5px;
-  color: white;
-  background-color: #1a73e8;
-  transition: background-color 0.3s;
-  //   margin-top: 10px;
-
-  &:hover {
-    background-color: #1558b8;
-  }
-}
-
-#reveal-button {
-  background-color: #f44336;
-  //   margin-left: 10px;
-
-  &:hover {
-    background-color: #d32f2f;
-  }
 }
 
 .hidden {
