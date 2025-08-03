@@ -1,8 +1,8 @@
 <template lang="pug">
 #score-area(v-show="gameFinished")
     h2 結果
-    p 最終スコア: 
-        strong#final-score {{ finalScore }}
+    //- p 最終スコア: 
+    //-     strong#final-score {{ finalScore }}
     p クリアタイム: 
         span#clear-time {{ timer.toFixed(2) }} 秒
     p ミスタイプ数: 
@@ -13,11 +13,11 @@
 
 <script setup>
 defineProps({
-    gameFinished: Boolean,
-    finalScore: Number,
-    timer: Number,
-    missCount: Number,
-    revealCount: Number,
+  gameFinished: Boolean,
+  finalScore: Number,
+  timer: Number,
+  missCount: Number,
+  revealCount: Number,
 })
 </script>
 
