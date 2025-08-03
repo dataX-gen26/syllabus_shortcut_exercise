@@ -46,21 +46,17 @@ import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 const imageModules = import.meta.glob('./assets/img/*.png', { eager: true })
 
 const isMac = /Mac|iPod|iPhone|iPad/.test(navigator.platform);
-const modifierKey = isMac ? 'Meta' : 'Control';
 
 const shortcuts = ref([
-  { id: 1, name: '太字にする', keys: [modifierKey, 'b'] },
-  { id: 2, name: 'コピーする', keys: [modifierKey, 'c'] },
-  { id: 3, name: '貼り付ける', keys: [modifierKey, 'v'] },
-  { id: 4, name: '切り取る', keys: [modifierKey, 'x'] },
-  //   { id: 5, name: 'すべて選択', keys: [modifierKey, 'a'] },
-  //   { id: 6, name: '元に戻す', keys: [modifierKey, 'z'] },
-  //   { id: 7, name: '前に戻す', keys: [modifierKey, 'y'] },
-  //   { id: 8, name: '検索', keys: [modifierKey, 'f'] },
+  { id: 1, name: '太字にする', keys: ['mod', 'b'] },
+  { id: 2, name: 'コピーする', keys: ['mod', 'c'] },
+  { id: 3, name: '貼り付ける', keys: ['mod', 'v'] },
+  { id: 4, name: '切り取る', keys: ['mod', 'x'] },
+  { id: 5, name: '下線を引く', keys: ['mod', 'alt', 'u'] },
 ])
 
 const currentQuestionIndex = ref(0)
-const pressedKeys = new Set()
+const pressedKeys = ref(new Set()) // Make pressedKeys reactive
 const missCount = ref(0)
 const revealCount = ref(0)
 const timer = ref(0)
@@ -115,9 +111,16 @@ const startButtonText = computed(() => {
 })
 
 function formatKeyForDisplay(key) {
-  if (isMac && key === 'Meta') return '⌘';
-  if (!isMac && key === 'Control') return 'Ctrl';
-  return key.charAt(0).toUpperCase() + key.slice(1);
+    switch (key) {
+        case 'mod':
+            return isMac ? '⌘' : 'Ctrl';
+        case 'alt':
+            return isMac ? '⌥' : 'Alt';
+        case 'shift':
+            return 'Shift';
+        default:
+            return key.charAt(0).toUpperCase() + key.slice(1);
+    }
 }
 
 function startGame() {
@@ -129,7 +132,7 @@ function startGame() {
   revealCount.value = 0
   timer.value = 0
   lastTime = 0
-  pressedKeys.clear()
+  pressedKeys.value.clear()
   shuffle(shortcuts.value)
   setQuestion()
   startTimer()
@@ -158,46 +161,57 @@ function setQuestion() {
 }
 
 function handleKeyDown(e) {
-  if (!isPlaying.value || showCorrectAnimation.value) return
-  e.preventDefault()
+    if (!isPlaying.value || showCorrectAnimation.value) return;
+    e.preventDefault();
 
-  const key = e.key
+    // Update pressedKeys for display
+    pressedKeys.value.add(e.key.toLowerCase());
+    if (e.metaKey) pressedKeys.value.add('mod');
+    if (e.ctrlKey) pressedKeys.value.add(isMac ? 'Control' : 'mod'); // Distinguish Mac's Ctrl
+    if (e.altKey) pressedKeys.value.add('alt');
+    if (e.shiftKey) pressedKeys.value.add('shift');
 
-  if (!currentCorrectKeys.value.includes(key)) {
-    missCount.value++
-    return
-  }
-
-  pressedKeys.add(key)
-  checkAnswer()
+    checkAnswer(e);
 }
 
 function handleKeyUp(e) {
-  if (!isPlaying.value) return
-  pressedKeys.delete(e.key)
+    if (!isPlaying.value) return;
+    pressedKeys.value.clear(); // Clear display keys on any key up
 }
 
-function checkAnswer() {
-  if (pressedKeys.size !== currentCorrectKeys.value.length) {
-    return
-  }
+function checkAnswer(e) {
+    const requiredKeys = new Set(currentCorrectKeys.value);
+    const mainKey = [...requiredKeys].find(k => !['mod', 'alt', 'shift', 'Control'].includes(k));
 
-  const isCorrectCheck = currentCorrectKeys.value.every((key) => pressedKeys.has(key))
-
-  if (isCorrectCheck) {
-    stopTimer()
-    showCorrectAnimation.value = true
-
-    if (isLastQuestion.value) {
-      setTimeout(() => {
-        endGame()
-      }, 500)
-    } else {
-      setTimeout(() => {
-        nextQuestion()
-      }, 500)
+    // Check for the main, non-modifier key
+    if (e.key.toLowerCase() !== mainKey) {
+        missCount.value++;
+        return;
     }
-  }
+
+    // Check modifier keys
+    const modPressed = isMac ? e.metaKey : e.ctrlKey;
+    const altPressed = e.altKey;
+    const shiftPressed = e.shiftKey;
+    // Note: Mac's Control key can be handled separately if needed
+
+    const correctModifiers = 
+        (requiredKeys.has('mod') === modPressed) &&
+        (requiredKeys.has('alt') === altPressed) &&
+        (requiredKeys.has('shift') === shiftPressed);
+
+    if (correctModifiers) {
+        stopTimer();
+        showCorrectAnimation.value = true;
+
+        if (isLastQuestion.value) {
+            setTimeout(endGame, 500);
+        } else {
+            setTimeout(nextQuestion, 500);
+        }
+    } else {
+        missCount.value++;
+    }
 }
 
 function revealAnswer() {
@@ -226,7 +240,7 @@ function nextQuestion() {
     return
   }
   currentQuestionIndex.value++
-  pressedKeys.clear()
+  pressedKeys.value.clear()
   showCorrectAnimation.value = false
   isRevealAnswer.value = false
   setQuestion()
