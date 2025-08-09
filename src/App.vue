@@ -3,7 +3,7 @@
 </template>
 
 <script setup>
-import IndexView from './views/index.vue'
+import IndexView from './views/shortcuts/index.vue'
 </script>
 
 <style lang="scss">

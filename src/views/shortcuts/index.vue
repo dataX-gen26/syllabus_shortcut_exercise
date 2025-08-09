@@ -8,6 +8,7 @@
       :isPlaying="isPlaying",
       :gameFinished="gameFinished",
       :questionText="questionText",
+      :questionFrequency="questionFrequency",
       :showCorrectAnimation="showCorrectAnimation",
       :isRevealAnswer="isRevealAnswer",
       :currentCorrectKeys="currentCorrectKeys",
@@ -43,22 +44,16 @@
 
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import { shortcutsList } from '@/composables/shortcutsList'
 import QuizArea from './components/QuizArea.vue'
 import ScoreArea from './components/ScoreArea.vue'
 import StatusArea from './components/StatusArea.vue'
 import ControlButtons from './components/ControlButtons.vue'
 import PreviewArea from './components/PreviewArea.vue'
 
-const imageModules = import.meta.glob('../assets/img/*.png', { eager: true })
+const imageModules = import.meta.glob('@/assets/img/*.png', { eager: true })
 
 const isMac = /Mac|iPod|iPhone|iPad/.test(navigator.platform)
-
-const shortcuts = ref([
-  { id: 1, name: '太字にする', keys: ['mod', 'b'] },
-  { id: 2, name: 'コピーする', keys: ['mod', 'c'] },
-  { id: 3, name: '貼り付ける', keys: ['mod', 'v'] },
-  { id: 4, name: '切り取る', keys: ['mod', 'x'] },
-])
 
 const currentQuestionIndex = ref(0)
 const pressedKeys = ref(new Set()) // Make pressedKeys reactive
@@ -73,17 +68,18 @@ const showCorrectAnimation = ref(false)
 const isRevealAnswer = ref(false)
 
 const questionText = computed(() => {
-  if (gameFinished.value || !shortcuts.value[currentQuestionIndex.value]) {
+  if (gameFinished.value || !shortcutsList[currentQuestionIndex.value]) {
     return 'ここに問題文が表示されます'
   }
-  return `問題: ${shortcuts.value[currentQuestionIndex.value].name}`
+  const shortcut = shortcutsList[currentQuestionIndex.value]
+  return `${shortcut.name}`
 })
 
 const currentQuestionId = computed(() => {
-  if (gameFinished.value || !shortcuts.value[currentQuestionIndex.value]) {
+  if (gameFinished.value || !shortcutsList[currentQuestionIndex.value]) {
     return null
   }
-  return shortcuts.value[currentQuestionIndex.value].id
+  return shortcutsList[currentQuestionIndex.value].id
 })
 
 const previewImages = computed(() => {
@@ -95,15 +91,24 @@ const previewImages = computed(() => {
     .map((path) => imageModules[path].default)
 })
 
+const questionFrequency = computed(() => {
+  if (gameFinished.value || !shortcutsList[currentQuestionIndex.value]) {
+    return null
+  }
+  const shortcut = shortcutsList[currentQuestionIndex.value]
+  return `${shortcut.frequency}`
+})
+
 const currentCorrectKeys = computed(() => {
-  if (gameFinished.value || !shortcuts.value[currentQuestionIndex.value]) {
+  if (gameFinished.value || !shortcutsList[currentQuestionIndex.value]) {
     return []
   }
-  return shortcuts.value[currentQuestionIndex.value].keys
+  const shortcut = shortcutsList[currentQuestionIndex.value]
+  return isMac ? shortcut.keys.mac : shortcut.keys.windows
 })
 
 const isLastQuestion = computed(() => {
-  return currentQuestionIndex.value >= shortcuts.value.length - 1
+  return currentQuestionIndex.value >= shortcutsList.length - 1
 })
 
 const finalScore = computed(() => {
@@ -125,7 +130,7 @@ function startGame() {
   timer.value = 0
   lastTime = 0
   pressedKeys.value.clear()
-  shuffle(shortcuts.value)
+  shuffle(shortcutsList)
   setQuestion()
   startTimer()
 }
@@ -146,7 +151,7 @@ function stopTimer() {
 }
 
 function setQuestion() {
-  if (currentQuestionIndex.value >= shortcuts.value.length) {
+  if (currentQuestionIndex.value >= shortcutsList.length) {
     endGame()
     return
   }
@@ -156,12 +161,23 @@ function handleKeyDown(e) {
   if (!isPlaying.value || showCorrectAnimation.value) return
   e.preventDefault()
 
-  // Update pressedKeys for display
-  pressedKeys.value.add(e.key.toLowerCase())
-  if (e.metaKey) pressedKeys.value.add('mod')
-  if (e.ctrlKey) pressedKeys.value.add(isMac ? 'Control' : 'mod') // Distinguish Mac's Ctrl
-  if (e.altKey) pressedKeys.value.add('alt')
+  // Clear previous keys and update pressedKeys for display
+  pressedKeys.value.clear()
+
+  // Add modifier keys
+  if (isMac) {
+    if (e.metaKey) pressedKeys.value.add('cmd')
+    if (e.ctrlKey) pressedKeys.value.add('ctrl')
+    if (e.altKey) pressedKeys.value.add('option')
+  } else {
+    if (e.ctrlKey) pressedKeys.value.add('ctrl')
+    if (e.altKey) pressedKeys.value.add('alt')
+  }
+
   if (e.shiftKey) pressedKeys.value.add('shift')
+
+  // Add main key
+  pressedKeys.value.add(e.key.toLowerCase())
 
   checkAnswer(e)
 }
@@ -173,7 +189,9 @@ function handleKeyUp(e) {
 
 function checkAnswer(e) {
   const requiredKeys = new Set(currentCorrectKeys.value)
-  const mainKey = [...requiredKeys].find((k) => !['mod', 'alt', 'shift', 'Control'].includes(k))
+  const mainKey = [...requiredKeys].find(
+    (k) => !['ctrl', 'cmd', 'option', 'alt', 'shift'].includes(k)
+  )
 
   // Check for the main, non-modifier key
   if (e.key.toLowerCase() !== mainKey) {
@@ -181,16 +199,30 @@ function checkAnswer(e) {
     return
   }
 
-  // Check modifier keys
-  const modPressed = isMac ? e.metaKey : e.ctrlKey
-  const altPressed = e.altKey
-  const shiftPressed = e.shiftKey
-  // Note: Mac's Control key can be handled separately if needed
+  // Check modifier keys based on OS
+  let correctModifiers = true
 
-  const correctModifiers =
-    requiredKeys.has('mod') === modPressed &&
-    requiredKeys.has('alt') === altPressed &&
-    requiredKeys.has('shift') === shiftPressed
+  if (isMac) {
+    const cmdPressed = e.metaKey
+    const ctrlPressed = e.ctrlKey
+    const optionPressed = e.altKey
+    const shiftPressed = e.shiftKey
+
+    correctModifiers =
+      requiredKeys.has('cmd') === cmdPressed &&
+      requiredKeys.has('ctrl') === ctrlPressed &&
+      requiredKeys.has('option') === optionPressed &&
+      requiredKeys.has('shift') === shiftPressed
+  } else {
+    const ctrlPressed = e.ctrlKey
+    const altPressed = e.altKey
+    const shiftPressed = e.shiftKey
+
+    correctModifiers =
+      requiredKeys.has('ctrl') === ctrlPressed &&
+      requiredKeys.has('alt') === altPressed &&
+      requiredKeys.has('shift') === shiftPressed
+  }
 
   if (correctModifiers) {
     stopTimer()

@@ -1,6 +1,8 @@
 <template lang="pug">
 #quiz-area(v-show="isPlaying && !gameFinished")
-  #question {{ questionText }}
+  .quiz-header
+    span#question 問題: {{ questionText }}
+    span#frequency 頻出度: {{ questionFrequency }}
   #feedback-container
     #key-input-container
       span.correct-text(:class="{ visible: showCorrectAnimation && !isRevealAnswer }" v-if="!isRevealAnswer") 正解！🎉
@@ -12,16 +14,22 @@
 
 <script setup>
 import { computed } from 'vue'
+import { shortcutsList } from '@/composables/shortcutsList'
 
 const props = defineProps({
   isPlaying: Boolean,
   gameFinished: Boolean,
   questionText: String,
+  questionFrequency: String,
   showCorrectAnimation: Boolean,
   isRevealAnswer: Boolean,
   currentCorrectKeys: Array,
   pressedKeys: Set,
   isMac: Boolean,
+})
+
+const shortcuts = computed(() => {
+  return shortcutsList
 })
 
 function formatKeyForDisplay(key) {
@@ -51,10 +59,33 @@ function formatKeyForDisplay(key) {
   align-items: center;
 }
 
-#question {
-  font-size: 20px;
-  font-weight: bold;
-  margin-bottom: 10px;
+.quiz-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  margin: 10px 0;
+  position: relative;
+
+  #question {
+    font-size: 20px;
+    font-weight: bold;
+  }
+
+  #frequency {
+    font-size: 16px;
+    color: #666;
+    position: absolute;
+    top: 0;
+    right: 10px;
+    padding: 5px 10px;
+    background-color: #f0f0f0;
+    border-radius: 0 8px 0 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    font-style: italic;
+    // transition: opacity 0.3s ease;
+    // opacity: 0.8;
+  }
 }
 
 #feedback-container {
