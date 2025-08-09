@@ -1,8 +1,7 @@
 <template lang="pug">
 #quiz-area(v-show="isPlaying && !gameFinished")
-  .quiz-header
-    span#question 問題: {{ questionText }}
-    span#frequency 頻出度: {{ questionFrequency }}
+  span#question 問題: {{ questionText }}
+  span#frequency 頻出度: {{ questionFrequency }}
   #feedback-container
     #key-input-container
       span.correct-text(:class="{ visible: showCorrectAnimation && !isRevealAnswer }" v-if="!isRevealAnswer") 正解！🎉
@@ -57,35 +56,26 @@ function formatKeyForDisplay(key) {
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  position: relative;
 }
 
-.quiz-header {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 100%;
-  margin: 10px 0;
-  position: relative;
+#question {
+  font-size: 20px;
+  font-weight: bold;
+  margin: 5px 0px 10px 0px;
+}
 
-  #question {
-    font-size: 20px;
-    font-weight: bold;
-  }
-
-  #frequency {
-    font-size: 16px;
-    color: #666;
-    position: absolute;
-    top: 0;
-    right: 10px;
-    padding: 5px 10px;
-    background-color: #f0f0f0;
-    border-radius: 0 8px 0 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    font-style: italic;
-    // transition: opacity 0.3s ease;
-    // opacity: 0.8;
-  }
+#frequency {
+  font-size: 14px;
+  color: #666;
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  padding: 5px 10px;
+  background-color: #f0f0f0;
+  border-radius: 0 8px 0 8px;
+  box-shadow: 0 4px 4px rgba(0, 0, 0, 0.1);
+  font-style: italic;
 }
 
 #feedback-container {

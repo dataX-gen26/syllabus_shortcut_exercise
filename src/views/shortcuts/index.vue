@@ -83,6 +83,9 @@ const currentQuestionId = computed(() => {
 })
 
 const previewImages = computed(() => {
+  // 一時的にプレビュー画像の表示をなくす
+  return []
+
   if (!currentQuestionId.value) return []
   const questionId = currentQuestionId.value
   return Object.keys(imageModules)
