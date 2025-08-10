@@ -2,7 +2,9 @@
 .wrapper
   .container
     h1 スプレッドシート ショートカット演習
-    p 問題の操作を行うショートカットキーを押してください。
+    p(v-if="!isPlaying && !gameFinished") 制限時間1分で、何問正解できるかに挑戦！
+    p(v-if="isPlaying") 問題の操作を行うショートカットキーを押してください。
+    p(v-if="gameFinished") 時間です！お疲れ様でした。
 
     QuizArea(
       :isPlaying="isPlaying",
@@ -17,14 +19,19 @@
     )
 
     ScoreArea(
+      v-if="gameFinished"
       :gameFinished="gameFinished",
-      :finalScore="finalScore",
-      :timer="timer",
+      :correctCount="correctCount",
       :missCount="missCount",
       :revealCount="revealCount"
     )
 
-    StatusArea(:timer="timer", :missCount="missCount")
+    StatusArea(
+      v-if="isPlaying"
+      :timer="timer",
+      :correctCount="correctCount",
+      :missCount="missCount"
+    )
 
     ControlButtons(
       :isPlaying="isPlaying",
@@ -51,123 +58,81 @@ import StatusArea from './components/StatusArea.vue'
 import ControlButtons from './components/ControlButtons.vue'
 import PreviewArea from './components/PreviewArea.vue'
 
-const imageModules = import.meta.glob('@/assets/img/*.png', { eager: true })
+const TIME_LIMIT = 60 // 制限時間（秒）
 
+const imageModules = import.meta.glob('@/assets/img/*.png', { eager: true })
 const isMac = /Mac|iPod|iPhone|iPad/.test(navigator.platform)
 
+const questions = ref([])
 const currentQuestionIndex = ref(0)
-const pressedKeys = ref(new Set()) // Make pressedKeys reactive
+const pressedKeys = ref(new Set())
 const missCount = ref(0)
 const revealCount = ref(0)
-const timer = ref(0)
+const correctCount = ref(0) // 正解数をカウント
+const timer = ref(TIME_LIMIT)
 let timerInterval = null
-let lastTime = 0
+
 const isPlaying = ref(false)
 const gameFinished = ref(false)
 const showCorrectAnimation = ref(false)
 const isRevealAnswer = ref(false)
 
-const questionText = computed(() => {
-  if (gameFinished.value || !shortcutsList[currentQuestionIndex.value]) {
-    return 'ここに問題文が表示されます'
-  }
-  const shortcut = shortcutsList[currentQuestionIndex.value]
-  return `${shortcut.name}`
+const currentQuestion = computed(() => {
+  if (!questions.value.length) return null
+  return questions.value[currentQuestionIndex.value]
 })
 
-const currentQuestionId = computed(() => {
-  if (gameFinished.value || !shortcutsList[currentQuestionIndex.value]) {
-    return null
-  }
-  return shortcutsList[currentQuestionIndex.value].id
-})
-
-const previewImages = computed(() => {
-  // 一時的にプレビュー画像の表示をなくす
-  return []
-
-  if (!currentQuestionId.value) return []
-  const questionId = currentQuestionId.value
-  return Object.keys(imageModules)
-    .filter((path) => path.split('/').pop().startsWith(`q${questionId}_`))
-    .sort()
-    .map((path) => imageModules[path].default)
-})
-
-const questionFrequency = computed(() => {
-  if (gameFinished.value || !shortcutsList[currentQuestionIndex.value]) {
-    return null
-  }
-  const shortcut = shortcutsList[currentQuestionIndex.value]
-  return `${shortcut.frequency}`
-})
+const questionText = computed(() => currentQuestion.value?.name || 'ここに問題文が表示されます')
+const currentQuestionId = computed(() => currentQuestion.value?.id || null)
+const questionFrequency = computed(() => currentQuestion.value?.frequency || null)
 
 const currentCorrectKeys = computed(() => {
-  if (gameFinished.value || !shortcutsList[currentQuestionIndex.value]) {
-    return []
-  }
-  const shortcut = shortcutsList[currentQuestionIndex.value]
-  return isMac ? shortcut.keys.mac : shortcut.keys.windows
-})
-
-const isLastQuestion = computed(() => {
-  return currentQuestionIndex.value >= shortcutsList.length - 1
-})
-
-const finalScore = computed(() => {
-  let score = 10000 - timer.value * 50 - missCount.value * 100 - revealCount.value * 500
-  return Math.max(0, Math.round(score))
+  if (!currentQuestion.value) return []
+  return isMac ? currentQuestion.value.keys.mac : currentQuestion.value.keys.windows
 })
 
 const startButtonText = computed(() => {
   return gameFinished.value ? 'もう一度挑戦する' : 'スタート'
 })
 
+const previewImages = computed(() => {
+  return [] // Preview is disabled for now
+})
+
 function startGame() {
   isPlaying.value = true
   gameFinished.value = false
   showCorrectAnimation.value = false
-  currentQuestionIndex.value = 0
   missCount.value = 0
   revealCount.value = 0
-  timer.value = 0
-  lastTime = 0
+  correctCount.value = 0
+  timer.value = TIME_LIMIT
   pressedKeys.value.clear()
-  shuffle(shortcutsList)
-  setQuestion()
+
+  questions.value = shuffle([...shortcutsList])
+  currentQuestionIndex.value = 0
+
   startTimer()
 }
 
 function startTimer() {
-  const tickStartTime = Date.now()
   timerInterval = setInterval(() => {
-    const diff = (Date.now() - tickStartTime) / 1000
-    timer.value = lastTime + diff
-  }, 100)
+    timer.value--
+    if (timer.value <= 0) {
+      endGame()
+    }
+  }, 1000)
 }
 
 function stopTimer() {
   clearInterval(timerInterval)
-  if (isPlaying.value || gameFinished.value) {
-    lastTime = timer.value
-  }
-}
-
-function setQuestion() {
-  if (currentQuestionIndex.value >= shortcutsList.length) {
-    endGame()
-    return
-  }
 }
 
 function handleKeyDown(e) {
   if (!isPlaying.value || showCorrectAnimation.value) return
   e.preventDefault()
 
-  // Clear previous keys and update pressedKeys for display
   pressedKeys.value.clear()
-
-  // Add modifier keys
   if (isMac) {
     if (e.metaKey) pressedKeys.value.add('cmd')
     if (e.ctrlKey) pressedKeys.value.add('ctrl')
@@ -176,10 +141,7 @@ function handleKeyDown(e) {
     if (e.ctrlKey) pressedKeys.value.add('ctrl')
     if (e.altKey) pressedKeys.value.add('alt')
   }
-
   if (e.shiftKey) pressedKeys.value.add('shift')
-
-  // Add main key
   pressedKeys.value.add(e.key.toLowerCase())
 
   checkAnswer(e)
@@ -187,7 +149,7 @@ function handleKeyDown(e) {
 
 function handleKeyUp(e) {
   if (!isPlaying.value) return
-  pressedKeys.value.clear() // Clear display keys on any key up
+  pressedKeys.value.clear()
 }
 
 function checkAnswer(e) {
@@ -196,46 +158,29 @@ function checkAnswer(e) {
     (k) => !['ctrl', 'cmd', 'option', 'alt', 'shift'].includes(k)
   )
 
-  // Check for the main, non-modifier key
   if (e.key.toLowerCase() !== mainKey) {
     missCount.value++
     return
   }
 
-  // Check modifier keys based on OS
   let correctModifiers = true
-
   if (isMac) {
-    const cmdPressed = e.metaKey
-    const ctrlPressed = e.ctrlKey
-    const optionPressed = e.altKey
-    const shiftPressed = e.shiftKey
-
     correctModifiers =
-      requiredKeys.has('cmd') === cmdPressed &&
-      requiredKeys.has('ctrl') === ctrlPressed &&
-      requiredKeys.has('option') === optionPressed &&
-      requiredKeys.has('shift') === shiftPressed
+      requiredKeys.has('cmd') === e.metaKey &&
+      requiredKeys.has('ctrl') === e.ctrlKey &&
+      requiredKeys.has('option') === e.altKey &&
+      requiredKeys.has('shift') === e.shiftKey
   } else {
-    const ctrlPressed = e.ctrlKey
-    const altPressed = e.altKey
-    const shiftPressed = e.shiftKey
-
     correctModifiers =
-      requiredKeys.has('ctrl') === ctrlPressed &&
-      requiredKeys.has('alt') === altPressed &&
-      requiredKeys.has('shift') === shiftPressed
+      requiredKeys.has('ctrl') === e.ctrlKey &&
+      requiredKeys.has('alt') === e.altKey &&
+      requiredKeys.has('shift') === e.shiftKey
   }
 
   if (correctModifiers) {
-    stopTimer()
+    correctCount.value++
     showCorrectAnimation.value = true
-
-    if (isLastQuestion.value) {
-      setTimeout(endGame, 500)
-    } else {
-      setTimeout(nextQuestion, 500)
-    }
+    setTimeout(nextQuestion, 500)
   } else {
     missCount.value++
   }
@@ -243,41 +188,32 @@ function checkAnswer(e) {
 
 function revealAnswer() {
   if (!isPlaying.value || showCorrectAnimation.value) return
-
   isRevealAnswer.value = true
-
   revealCount.value++
-  stopTimer()
   showCorrectAnimation.value = true
-
-  if (isLastQuestion.value) {
-    setTimeout(() => {
-      endGame()
-    }, 500)
-  } else {
-    setTimeout(() => {
-      nextQuestion()
-    }, 500)
-  }
+  setTimeout(nextQuestion, 500)
 }
 
 function nextQuestion() {
-  if (isLastQuestion.value) {
-    endGame()
-    return
+  if (!isPlaying.value) return // ゲームが終了していたら何もしない
+
+  // 問題リストの最後に到達したら、再度シャッフルして最初に戻る
+  if (currentQuestionIndex.value >= questions.value.length - 1) {
+    questions.value = shuffle([...shortcutsList])
+    currentQuestionIndex.value = 0
+  } else {
+    currentQuestionIndex.value++
   }
-  currentQuestionIndex.value++
+
   pressedKeys.value.clear()
   showCorrectAnimation.value = false
   isRevealAnswer.value = false
-  setQuestion()
-  startTimer()
 }
 
 function endGame() {
+  stopTimer()
   isPlaying.value = false
   gameFinished.value = true
-  stopTimer()
 }
 
 function shuffle(array) {
@@ -285,6 +221,7 @@ function shuffle(array) {
     const j = Math.floor(Math.random() * (i + 1))
     ;[array[i], array[j]] = [array[j], array[i]]
   }
+  return array
 }
 
 onMounted(() => {

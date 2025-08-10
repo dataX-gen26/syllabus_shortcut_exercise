@@ -1,9 +1,8 @@
 <template lang="pug">
-  IndexView
+  router-view
 </template>
 
 <script setup>
-import IndexView from './views/shortcuts/index.vue'
 </script>
 
 <style lang="scss">

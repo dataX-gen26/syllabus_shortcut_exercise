@@ -1,10 +1,8 @@
 <template lang="pug">
 #score-area(v-show="gameFinished")
     h2 結果
-    //- p 最終スコア: 
-    //-     strong#final-score {{ finalScore }}
-    p クリアタイム: 
-        span#clear-time {{ timer.toFixed(2) }} 秒
+    p 正解数: 
+        strong#correct-count {{ correctCount }} 問
     p ミスタイプ数: 
         span#final-miss-count {{ missCount }} 回
     p 正解を見た回数: 
@@ -14,13 +12,16 @@
 <script setup>
 defineProps({
   gameFinished: Boolean,
-  finalScore: Number,
-  timer: Number,
+  correctCount: Number,
   missCount: Number,
   revealCount: Number,
 })
 </script>
 
 <style lang="scss" scoped>
-/* Add component-specific styles here if needed */
+#correct-count {
+  font-size: 22px;
+  color: #1a73e8;
+  font-weight: bold;
+}
 </style>
