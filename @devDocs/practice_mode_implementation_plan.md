@@ -28,9 +28,9 @@ src/
         ├── test.vue (リネーム)
         ├── practice.vue (新規作成)
         └── components/
-            ├── ControlButtons.vue (再利用)
-            ├── PreviewArea.vue (再利用)
-            ├── QuizArea.vue (再利用)
+            ├── ControlButtons.vue (共通利用)
+            ├── PreviewArea.vue (共通利用)
+            ├── QuizArea.vue (共通利用)
             ├── ScoreArea.vue (テストモードでのみ利用)
             └── StatusArea.vue (テストモードでのみ利用)
 ```
