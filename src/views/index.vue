@@ -1,34 +1,21 @@
 <template lang="pug">
-.wrapper
-  .container
-    h1 ショートカットキー演習
-    p モードを選択してください。
-    .mode-selection
-      router-link.mode-button(to="/practice") 練習モード
-      router-link.mode-button(to="/test") テストモード
+.container
+  h1 ショートカットキー演習
+  p モードを選択してください。
+  .mode-selection
+    router-link.mode-button(to="/practice") 練習モード
+    router-link.mode-button(to="/test") テストモード
 </template>
 
 <script setup>
 </script>
 
 <style lang="scss" scoped>
-.wrapper {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-}
-
-.container {
-  text-align: center;
-  background-color: white;
-  padding: 40px;
-  border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
+// .container スタイルは App.vue のグローバルスタイルで定義
+// .wrapper スタイルは不要になったため削除
 
 h1 {
-  color: #1a73e8;
+  // App.vueのスタイルを継承
   margin-bottom: 20px;
 }
 

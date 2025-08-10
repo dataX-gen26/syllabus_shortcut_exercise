@@ -1,28 +1,37 @@
 <template lang="pug">
-  router-view
+#app-container
+  Header
+  main.main-content
+    router-view
 </template>
 
 <script setup>
+import Header from '@/components/Header.vue'
 </script>
 
 <style lang="scss">
 body {
   font-family: sans-serif;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
   margin: 0;
   background-color: #f0f2f5;
   color: #333;
 }
 
-.wrapper {
+#app-container {
   display: flex;
   flex-direction: column;
+  height: 100vh;
+}
+
+.main-content {
+  padding-top: 60px; // ヘッダーの高さ分
+  flex-grow: 1;
+  display: flex;
   justify-content: center;
   align-items: center;
-  height: 100%;
+  width: 100%;
+  padding-left: 1rem;
+  padding-right: 1rem;
 }
 
 .container {
@@ -32,7 +41,7 @@ body {
   border-radius: 10px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   width: 600px;
-  justify-content: center;
+  max-width: 100%;
 
   h1 {
     color: #1a73e8;

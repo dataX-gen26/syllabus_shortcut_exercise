@@ -1,8 +1,8 @@
 <template lang="pug">
-.wrapper
+.page-wrapper
   .container
     h1 スプレッドシート ショートカット演習
-    p(v-if="!isPlaying && !gameFinished") 制限時間1分で、何問正解できるかに挑戦！
+    p(v-if="!isPlaying && !gameFinished") 制限時間2分で、何問正解できるかに挑戦！
     p(v-if="isPlaying") 問題の操作を行うショートカットキーを押してください。
     p(v-if="gameFinished") 時間です！お疲れ様でした。
 
@@ -58,7 +58,7 @@ import StatusArea from './components/StatusArea.vue'
 import ControlButtons from './components/ControlButtons.vue'
 import PreviewArea from './components/PreviewArea.vue'
 
-const TIME_LIMIT = 60 // 制限時間（秒）
+const TIME_LIMIT = 120 // 制限時間（秒）
 
 const imageModules = import.meta.glob('@/assets/img/*.png', { eager: true })
 const isMac = /Mac|iPod|iPhone|iPad/.test(navigator.platform)
@@ -236,47 +236,14 @@ onBeforeUnmount(() => {
 })
 </script>
 
-<style lang="scss">
-body {
-  font-family: sans-serif;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  margin: 0;
-  background-color: #f0f2f5;
-  color: #333;
-}
-
-.wrapper {
+<style lang="scss" scoped>
+.page-wrapper {
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   height: 100%;
-  //   margin: 50px;
 }
 
-.container {
-  text-align: center;
-  background-color: white;
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  width: 600px;
-  justify-content: center;
-
-  h1 {
-    color: #1a73e8;
-  }
-}
-
-#result {
-  font-size: 24px;
-  font-weight: bold;
-}
-
-.hidden {
-  display: none;
-}
+// .container スタイルは App.vue で定義
 </style>

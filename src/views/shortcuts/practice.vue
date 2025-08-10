@@ -1,5 +1,5 @@
 <template lang="pug">
-.wrapper
+.page-wrapper
   .container
     //- モード選択画面
     template(v-if="step === 'select'")
@@ -229,7 +229,7 @@ onBeforeUnmount(() => {
 </script>
 
 <style lang="scss" scoped>
-.wrapper {
+.page-wrapper {
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -237,19 +237,7 @@ onBeforeUnmount(() => {
   height: 100%;
 }
 
-.container {
-  text-align: center;
-  background-color: white;
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  width: 600px;
-  justify-content: center;
-
-  h1 {
-    color: #1a73e8;
-  }
-}
+// .container スタイルは App.vue で定義
 
 .frequency-selection {
   margin: 30px 0;
