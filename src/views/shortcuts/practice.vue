@@ -4,7 +4,7 @@
     //- モード選択画面
     template(v-if="step === 'select'")
       h1 練習モード
-      p 練習したい頻出度を選択してください。
+      p 練習したいショートカットの頻出度を選択してください。
       .frequency-selection
         button.freq-button(v-for="freq in frequencies" :key="freq" @click="startPractice(freq)") {{ freq }}
       router-link.back-button(to="/") モード選択に戻る
@@ -73,7 +73,6 @@ const gameFinished = ref(false)
 const showCorrectAnimation = ref(false)
 const isRevealAnswer = ref(false)
 
-
 // --- Computed Properties ---
 const currentQuestion = computed(() => {
   if (!questions.value.length || currentQuestionIndex.value >= questions.value.length) {
@@ -99,7 +98,6 @@ const previewImages = computed(() => {
   return [] // Preview is disabled for now
 })
 
-
 // --- Methods ---
 function shuffle(array) {
   for (let i = array.length - 1; i > 0; i--) {
@@ -111,7 +109,7 @@ function shuffle(array) {
 
 function startPractice(frequency) {
   selectedFrequency.value = frequency
-  const filtered = shortcutsList.filter(q => q.frequency === frequency)
+  const filtered = shortcutsList.filter((q) => q.frequency === frequency)
   questions.value = shuffle(filtered).slice(0, 10)
 
   if (questions.value.length > 0) {
@@ -159,7 +157,9 @@ function handleKeyUp(e) {
 
 function checkAnswer(e) {
   const requiredKeys = new Set(currentCorrectKeys.value)
-  const mainKey = [...requiredKeys].find(k => !['ctrl', 'cmd', 'option', 'alt', 'shift'].includes(k))
+  const mainKey = [...requiredKeys].find(
+    (k) => !['ctrl', 'cmd', 'option', 'alt', 'shift'].includes(k)
+  )
 
   if (e.key.toLowerCase() !== mainKey) return
 
@@ -216,7 +216,7 @@ function endGame() {
 
 // --- Lifecycle Hooks ---
 onMounted(() => {
-  const uniqueFrequencies = [...new Set(shortcutsList.map(item => item.frequency))]
+  const uniqueFrequencies = [...new Set(shortcutsList.map((item) => item.frequency))]
   frequencies.value = uniqueFrequencies
   document.addEventListener('keydown', handleKeyDown)
   document.addEventListener('keyup', handleKeyUp)

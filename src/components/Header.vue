@@ -2,7 +2,7 @@
 header.app-header
   .logo
     router-link(to="/") daX Syllabus
-    span#subject-label スプシショートカット
+    h3#subject-label スプシショートカット
   nav.navigation
     router-link(to="/practice") 練習モード
     router-link(to="/test") テストモード
@@ -12,7 +12,7 @@ header.app-header
 
 <style lang="scss" scoped>
 .app-header {
-  background-color: #1a73e8;
+  background-color: #46bdc6;
   color: white;
   padding: 0 2rem;
   display: flex;
@@ -51,13 +51,10 @@ header.app-header
   font-size: 0.95rem;
   font-weight: 600;
   letter-spacing: 0.02em;
-  color: #fff;
   background: rgba(255, 255, 255, 0.16);
   border: 1px solid rgba(255, 255, 255, 0.35);
   box-shadow: 0 1px 0 rgba(0, 0, 0, 0.1) inset, 0 1px 2px rgba(0, 0, 0, 0.15);
   margin-left: 0.25rem;
-  margin-bottom: 0; // remove extra space in fixed header
-  white-space: nowrap;
 }
 
 .navigation a {

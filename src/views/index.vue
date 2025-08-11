@@ -7,8 +7,7 @@
     router-link.mode-button(to="/test") テストモード
 </template>
 
-<script setup>
-</script>
+<script setup></script>
 
 <style lang="scss" scoped>
 // .container スタイルは App.vue のグローバルスタイルで定義
