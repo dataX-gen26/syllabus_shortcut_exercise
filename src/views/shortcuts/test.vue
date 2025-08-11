@@ -2,7 +2,7 @@
 .page-wrapper
   .container
     h1 スプレッドシート ショートカット演習
-    p(v-if="!isPlaying && !gameFinished") 制限時間2分で、何問正解できるかに挑戦！
+    p(v-if="!isPlaying && !gameFinished") 制限時間1分！何問正解できるかに挑戦！
     p(v-if="isPlaying") 問題の操作を行うショートカットキーを押してください。
     p(v-if="gameFinished") 時間です！お疲れ様でした。
 
@@ -10,7 +10,7 @@
       :isPlaying="isPlaying",
       :gameFinished="gameFinished",
       :questionText="questionText",
-      :questionFrequency="questionFrequency",
+      :questionLevel="questionLevel",
       :showCorrectAnimation="showCorrectAnimation",
       :isRevealAnswer="isRevealAnswer",
       :currentCorrectKeys="currentCorrectKeys",
@@ -41,6 +41,8 @@
       @revealAnswer="revealAnswer"
     )
 
+    p.end-game(v-if="isPlaying" @click="endGame") 終了する
+
   PreviewArea(
     :currentQuestionId="currentQuestionId",
     :isPlaying="isPlaying",
@@ -61,10 +63,11 @@ import {
   isMacPlatform,
   getRequiredKeysForQuestion,
   eventToKeyNames,
-  isSinglePatternMatch,
+  checkAnswer,
+  shuffle,
 } from '@/composables/shortcutUtils'
 
-const TIME_LIMIT = 120
+const TIME_LIMIT = 60
 
 const isMac = isMacPlatform()
 
@@ -90,7 +93,7 @@ const currentQuestion = computed(() => {
 
 const questionText = computed(() => currentQuestion.value?.name || 'ここに問題文が表示されます')
 const currentQuestionId = computed(() => currentQuestion.value?.id || null)
-const questionFrequency = computed(() => currentQuestion.value?.frequency || null)
+const questionLevel = computed(() => currentQuestion.value?.level || null)
 
 const currentCorrectKeys = computed(() => {
   return getRequiredKeysForQuestion(currentQuestion.value, isMac)
@@ -134,14 +137,8 @@ function handleKeyDown(e) {
   e.preventDefault()
   pressedKeys.value = new Set(eventToKeyNames(e, isMac))
 
-  const answerPatterns = currentCorrectKeys.value
-  if (!answerPatterns || answerPatterns.length === 0) return
-
-  for (const pattern of answerPatterns) {
-    if (isSinglePatternMatch(e, pattern, isMac)) {
-      handleCorrectAnswer()
-      return
-    }
+  if (checkAnswer(e, currentCorrectKeys.value, isMac)) {
+    handleCorrectAnswer()
   }
 }
 
@@ -149,7 +146,7 @@ function handleKeyUp() {
   if (showCorrectAnimation.value) return
   // A short delay to prevent keys from disappearing too quickly
   setTimeout(() => {
-      pressedKeys.value.clear()
+    pressedKeys.value.clear()
   }, 100)
 }
 
@@ -186,14 +183,6 @@ function endGame() {
   gameFinished.value = true
 }
 
-function shuffle(array) {
-  for (let i = array.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1))
-    ;[array[i], array[j]] = [array[j], array[i]]
-  }
-  return array
-}
-
 onMounted(() => {
   document.addEventListener('keydown', handleKeyDown)
   document.addEventListener('keyup', handleKeyUp)
@@ -207,6 +196,9 @@ onBeforeUnmount(() => {
 </script>
 
 <style lang="scss" scoped>
+@import '@/assets/_variables.scss';
+@import '@/assets/style.scss';
+
 .page-wrapper {
   display: flex;
   flex-direction: column;

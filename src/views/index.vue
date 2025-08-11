@@ -11,6 +11,7 @@
 
 <style lang="scss" scoped>
 @import '@/assets/_variables.scss';
+@import '@/assets/style.scss';
 
 // .container スタイルは App.vue のグローバルスタイルで定義
 // .wrapper スタイルは不要になったため削除

@@ -1,7 +1,7 @@
 <template lang="pug">
 #quiz-area(v-show="isPlaying && !gameFinished")
   span#question 問題: {{ questionText }}
-  span#frequency 頻出度: {{ questionFrequency }}
+  span#level 難易度: {{ questionLevel }}
   #feedback-container
     #key-input-container
       span.correct-text(:class="{ visible: showCorrectAnimation && !isRevealAnswer }" v-if="!isRevealAnswer") 正解！🎉
@@ -15,7 +15,7 @@ const props = defineProps({
   isPlaying: Boolean,
   gameFinished: Boolean,
   questionText: String,
-  questionFrequency: String,
+  questionLevel: String,
   showCorrectAnimation: Boolean,
   isRevealAnswer: Boolean,
   currentCorrectKeys: Array,
@@ -113,7 +113,7 @@ const formattedAnswer = computed(() => {
   margin: 5px 0px 10px 0px;
 }
 
-#frequency {
+#level {
   font-size: 14px;
   color: $text-color-light;
   position: absolute;
@@ -127,7 +127,7 @@ const formattedAnswer = computed(() => {
 }
 
 #feedback-container {
-  height: 60px;
+  height: fit-content;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -136,13 +136,14 @@ const formattedAnswer = computed(() => {
 #key-input-container {
   position: relative;
   display: flex;
+  flex-direction: row;
   align-items: center;
   justify-content: center;
 }
 
 .correct-text {
   position: absolute;
-  left: -50%;
+  left: -95px;
   top: 50%;
   transform: translateY(-50%);
   font-size: 20px;

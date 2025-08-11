@@ -9,11 +9,13 @@
         thead
           tr
             th 操作内容
+            th 難易度
             th Windows
             th Mac
         tbody
           tr(v-for="shortcut in group" :key="shortcut.id")
             td {{ shortcut.name }}
+            td.level-cell(:class="'level-' + shortcut.level") {{ shortcut.level }}
             td.keys
               span(v-html="formatAnswerKeys(shortcut.keys.windows)")
             td.keys
@@ -44,7 +46,7 @@ const groupedShortcuts = computed(() => {
 
 .page-container {
   width: 100%;
-  max-width: 960px;
+  max-width: 1026px;
   margin: 2rem auto;
   padding: 2rem;
   box-sizing: border-box;
@@ -78,10 +80,11 @@ h1 {
   border-collapse: collapse;
   box-shadow: 0 2px 8px $shadow-color-light;
 
-  th, td {
+  th,
+  td {
     border: 1px solid $border-color;
     padding: 12px 15px;
-    text-align: left;
+    text-align: center;
   }
 
   thead {
@@ -105,24 +108,38 @@ h1 {
     font-weight: 500;
     // The deep selector is needed to style v-html content
     :deep(.key-box) {
-        display: inline-block;
-        border: 1px solid $disabled-color;
-        border-radius: 4px;
-        padding: 2px 6px;
-        margin: 0 2px;
-        background-color: $key-box-bg;
-        font-size: 0.9rem;
-        line-height: 1.4;
-        white-space: nowrap;
+      display: inline-block;
+      border: 1px solid $disabled-color;
+      border-radius: 4px;
+      padding: 2px 6px;
+      margin: 0 2px;
+      background-color: $key-box-bg;
+      font-size: 0.9rem;
+      line-height: 1.4;
+      white-space: nowrap;
     }
-    :deep(.plus), :deep(.separator) {
-        margin: 0 4px;
+    :deep(.plus),
+    :deep(.separator) {
+      margin: 0 4px;
+    }
+  }
+
+  td.level-cell {
+    font-weight: bold;
+    &.level-初級 {
+      color: #2ecc40;
+    }
+    &.level-中級 {
+      color: #ff9800;
+    }
+    &.level-上級 {
+      color: #e53935;
     }
   }
 }
 
 .back-to-top {
-    text-align: center;
-    margin-top: 3rem;
+  text-align: center;
+  margin-top: 3rem;
 }
 </style>

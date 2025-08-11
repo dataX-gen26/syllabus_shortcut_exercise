@@ -1,0 +1,10 @@
+.container {
+  padding: 0 1.5rem 1rem 1.5rem;
+}
+.end-game {
+  cursor: pointer;
+
+  &:hover {
+    color: $primary-color-dark;
+  }
+}

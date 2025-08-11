@@ -67,13 +67,16 @@ header.app-header
   font-size: 1rem;
   transition: opacity 0.3s;
   white-space: nowrap;
+  box-sizing: border-box;
+  padding: 0.25rem 0.5rem;
 
   &:hover {
     opacity: 0.8;
   }
 
   &.router-link-exact-active {
-    text-decoration: underline;
+    border-bottom: 2px solid $yellow;
+    font-weight: bold;
   }
 }
 </style>

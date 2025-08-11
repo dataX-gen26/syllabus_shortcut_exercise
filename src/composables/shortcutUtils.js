@@ -37,7 +37,29 @@ export function isSinglePatternMatch(e, requiredKeys, isMac) {
   if (!mainKey) return false
 
   let codeMainKey = e.code
-  if (codeMainKey.startsWith('Key')) {
+
+  const codeToKeyMap = {
+    'Minus': '-',
+    'Equal': '=',
+    'BracketLeft': '[',
+    'BracketRight': ']',
+    'Backslash': '\\',
+    'Semicolon': ';',
+    'Quote': '\'',
+    'Comma': ',',
+    'Period': '.', 
+    'Slash': '/',
+    'Backquote': '`',
+    'NumpadSubtract': '-',
+    'NumpadAdd': '+',
+    'NumpadMultiply': '*',
+    'NumpadDivide': '/',
+    'NumpadDecimal': '.', 
+  };
+
+  if (codeToKeyMap[codeMainKey]) {
+    codeMainKey = codeToKeyMap[codeMainKey];
+  } else if (codeMainKey.startsWith('Key')) {
     codeMainKey = codeMainKey.substring(3)
   } else if (codeMainKey.startsWith('Digit')) {
     codeMainKey = codeMainKey.substring(5)
@@ -65,6 +87,17 @@ export function isSinglePatternMatch(e, requiredKeys, isMac) {
   }
 }
 
+export function checkAnswer(e, answerPatterns, isMac) {
+  if (!answerPatterns || answerPatterns.length === 0) return false
+
+  for (const pattern of answerPatterns) {
+    if (isSinglePatternMatch(e, pattern, isMac)) {
+      return true
+    }
+  }
+  return false
+}
+
 // Formats a single pattern for display.
 function formatStep(stepKeys) {
   return stepKeys
@@ -76,4 +109,12 @@ function formatStep(stepKeys) {
 export function formatAnswerKeys(answerPatterns) {
   if (!answerPatterns || answerPatterns.length === 0) return ''
   return answerPatterns.map(formatStep).join(' / ')
+}
+
+export function shuffle(array) {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[array[i], array[j]] = [array[j], array[i]]
+  }
+  return array
 }

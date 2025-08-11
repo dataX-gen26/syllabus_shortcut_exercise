@@ -329,7 +329,13 @@ export const shortcutsList = [
     category: '行と列の追加や変更',
     frequency: '激高',
     level: '初級',
-    keys: { windows: [['ctrl', 'alt', '=']], mac: [['cmd', 'option', '=']] },
+    keys: {
+      windows: [['ctrl', 'alt', '=']],
+      mac: [
+        ['cmd', 'option', '='],
+        ['cmd', 'option', 'shift', '-'],
+      ],
+    },
   },
   {
     id: 42,

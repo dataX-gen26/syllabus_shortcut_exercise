@@ -17,6 +17,7 @@
         )
           img(:src="levelImage[level]" alt="レベルアイコン")
           .card-title {{ level }}
+          span 問題数: {{ levelCounts[level] }}
       router-link.basic-button(to="/") モード選択に戻る
 
     //- 演習画面
@@ -24,12 +25,13 @@
       .title-wrapper(v-if="isPlaying")
         h1 練習モード
         p 問題の操作を行うショートカットキーを押してください。
+        span.current-question-number 第 {{ currentQuestionIndex + 1 }} 問 / 全 {{ questions.length }} 問
 
       QuizArea(
         :isPlaying="isPlaying",
         :gameFinished="gameFinished",
         :questionText="questionText",
-        :questionFrequency="questionFrequency",
+        :questionLevel="questionLevel",
         :showCorrectAnimation="showCorrectAnimation",
         :isRevealAnswer="isRevealAnswer",
         :currentCorrectKeys="currentCorrectKeys",
@@ -41,7 +43,7 @@
       //- 終了後のメッセージ
       .end-message(v-if="gameFinished")
         h1 終了！
-        p 全10問の練習が終わりました。
+        p お疲れ様でした！
         .buttons
           button.basic-button(@click="restart") もう一度挑戦
           button.basic-button(@click="resetLevel") 難易度選択に戻る
@@ -54,9 +56,9 @@
         startButtonText="やり直す",
         @revealAnswer="revealAnswer"
       )
-      p.end-practice(
+      p.end-game(
         v-if="isPlaying"
-        @click="resetLevel"
+        @click="endGame"
       ) 終了する
 
   PreviewArea(
@@ -81,7 +83,8 @@ import {
   isMacPlatform,
   getRequiredKeysForQuestion,
   eventToKeyNames,
-  isSinglePatternMatch,
+  checkAnswer,
+  shuffle,
 } from '@/composables/shortcutUtils'
 
 const isMac = isMacPlatform()
@@ -109,7 +112,7 @@ const currentQuestion = computed(() => {
 
 const questionText = computed(() => currentQuestion.value?.name || 'ここに問題文が表示されます')
 const currentQuestionId = computed(() => currentQuestion.value?.id || null)
-const questionFrequency = computed(() => currentQuestion.value?.frequency || null)
+const questionLevel = computed(() => currentQuestion.value?.level || null)
 
 const currentCorrectKeys = computed(() => {
   return getRequiredKeysForQuestion(currentQuestion.value, isMac)
@@ -121,18 +124,17 @@ const isLastQuestion = computed(() => {
 
 const previewImages = computed(() => [])
 
-function shuffle(array) {
-  for (let i = array.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1))
-    ;[array[i], array[j]] = [array[j], array[i]]
-  }
-  return array
-}
+const levelCounts = computed(() => {
+  const counts = {}
+  levels.forEach((level) => {
+    counts[level] = shortcutsList.filter((q) => q.level === level).length
+  })
+  return counts
+})
 
 function startPractice(level) {
   selectedLevel.value = level
-  const filtered = shortcutsList.filter((q) => q.level === level)
-  questions.value = shuffle(filtered).slice(0, 10)
+  questions.value = shuffle(shortcutsList.filter((q) => q.level === level))
 
   if (questions.value.length > 0) {
     currentQuestionIndex.value = 0
@@ -143,7 +145,7 @@ function startPractice(level) {
     isRevealAnswer.value = false
     step.value = 'playing'
   } else {
-    alert('この頻度の問題はありません。')
+    alert('この難易度の問題はありません。')
   }
 }
 
@@ -158,14 +160,8 @@ function handleKeyDown(e) {
   e.preventDefault()
   pressedKeys.value = new Set(eventToKeyNames(e, isMac))
 
-  const answerPatterns = currentCorrectKeys.value
-  if (!answerPatterns || answerPatterns.length === 0) return
-
-  for (const pattern of answerPatterns) {
-    if (isSinglePatternMatch(e, pattern, isMac)) {
-      handleCorrectAnswer()
-      return
-    }
+  if (checkAnswer(e, currentCorrectKeys.value, isMac)) {
+    handleCorrectAnswer()
   }
 }
 
@@ -238,6 +234,7 @@ onBeforeUnmount(() => {
 
 <style lang="scss" scoped>
 @import '@/assets/_variables.scss';
+@import '@/assets/style.scss';
 
 .page-wrapper {
   display: flex;
@@ -295,6 +292,17 @@ onBeforeUnmount(() => {
   }
 }
 
+.title-wrapper {
+  margin-bottom: 20px;
+  text-align: center;
+
+  .current-question-number {
+    font-size: 16px;
+    color: $text-color;
+    margin-top: 5px;
+  }
+}
+
 .end-message {
   margin-top: 30px;
   h1 {
@@ -324,14 +332,6 @@ onBeforeUnmount(() => {
 
   &:hover {
     background-color: $primary-color-dark;
-  }
-}
-
-.end-practice {
-  cursor: pointer;
-
-  &:hover {
-    color: $primary-color-dark;
   }
 }
 </style>

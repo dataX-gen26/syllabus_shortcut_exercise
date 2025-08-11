@@ -10,9 +10,9 @@
 
 <script setup>
 defineProps({
-    timer: Number,
-    correctCount: Number,
-    missCount: Number,
+  timer: Number,
+  correctCount: Number,
+  missCount: Number,
 })
 </script>
 
