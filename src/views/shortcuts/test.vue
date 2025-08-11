@@ -65,6 +65,7 @@ import {
   eventToKeyNames,
   checkAnswer,
   shuffle,
+  isAnyPrefixMatch,
 } from '@/composables/shortcutUtils'
 
 const TIME_LIMIT = 60
@@ -135,10 +136,19 @@ function stopTimer() {
 function handleKeyDown(e) {
   if (!isPlaying.value || showCorrectAnimation.value) return
   e.preventDefault()
-  pressedKeys.value = new Set(eventToKeyNames(e, isMac))
+  const actualKeys = eventToKeyNames(e, isMac)
+  pressedKeys.value = new Set(actualKeys)
+
+  // Do not count a miss for Shift-only presses
+  if (actualKeys.length === 1 && actualKeys[0] === 'shift') {
+    return
+  }
 
   if (checkAnswer(e, currentCorrectKeys.value, isMac)) {
     handleCorrectAnswer()
+  } else if (!isAnyPrefixMatch(e, currentCorrectKeys.value, isMac)) {
+    // Count a miss only when the current input is not a valid prefix
+    missCount.value++
   }
 }
 

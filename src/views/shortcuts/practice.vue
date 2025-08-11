@@ -85,6 +85,7 @@ import {
   eventToKeyNames,
   checkAnswer,
   shuffle,
+  isAnyPrefixMatch,
 } from '@/composables/shortcutUtils'
 
 const isMac = isMacPlatform()
@@ -158,10 +159,18 @@ function restart() {
 function handleKeyDown(e) {
   if (!isPlaying.value || showCorrectAnimation.value) return
   e.preventDefault()
-  pressedKeys.value = new Set(eventToKeyNames(e, isMac))
+  const actualKeys = eventToKeyNames(e, isMac)
+  pressedKeys.value = new Set(actualKeys)
+
+  // Allow Shift-only presses without counting a miss
+  if (actualKeys.length === 1 && actualKeys[0] === 'shift') {
+    return
+  }
 
   if (checkAnswer(e, currentCorrectKeys.value, isMac)) {
     handleCorrectAnswer()
+  } else if (!isAnyPrefixMatch(e, currentCorrectKeys.value, isMac)) {
+    // Not a valid prefix, could count as miss if you add miss tracking to practice mode
   }
 }
 

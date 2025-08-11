@@ -1,6 +1,6 @@
 // Utilities for handling shortcut key logic shared across views
 
-export const MODIFIER_KEYS = ['ctrl', 'cmd', 'option', 'alt', 'shift', 'fn']
+export const MODIFIER_KEYS = ['ctrl', 'cmd', 'option', 'alt', 'shift', 'fn', 'meta']
 
 export function isMacPlatform() {
   return /Mac|iPod|iPhone|iPad/.test(navigator.platform)
@@ -11,80 +11,66 @@ export function getRequiredKeysForQuestion(question, isMac) {
   return isMac ? question.keys.mac : question.keys.windows
 }
 
-function getMainKey(requiredKeys) {
-  const keys = Array.isArray(requiredKeys) ? requiredKeys : [...requiredKeys]
-  return keys.find((k) => !MODIFIER_KEYS.includes(k)) || null
+// Map KeyboardEvent.code to display key names for non-alphanumeric and numpad keys
+const codeToKeyMap = {
+  Minus: '-',
+  Equal: '=',
+  BracketLeft: '[',
+  BracketRight: ']',
+  Backslash: '\\',
+  Semicolon: ';',
+  Quote: '\'',
+  Comma: ',',
+  Period: '.',
+  Slash: '/',
+  Backquote: '`',
+  NumpadSubtract: '-',
+  NumpadAdd: '+',
+  NumpadMultiply: '*',
+  NumpadDivide: '/',
+  NumpadDecimal: '.',
 }
 
 export function eventToKeyNames(e, isMac) {
-  const keys = []
+  const keys = new Set(); // Use a Set to avoid duplicates
+
   if (isMac) {
-    if (e.metaKey) keys.push('cmd')
-    if (e.ctrlKey) keys.push('ctrl')
-    if (e.altKey) keys.push('option')
+    if (e.metaKey) keys.add('cmd');
+    if (e.ctrlKey) keys.add('ctrl');
+    if (e.altKey) keys.add('option');
   } else {
-    if (e.ctrlKey) keys.push('ctrl')
-    if (e.altKey) keys.push('alt')
+    if (e.ctrlKey) keys.add('ctrl');
+    if (e.altKey) keys.add('alt');
   }
-  if (e.shiftKey) keys.push('shift')
-  keys.push((e.key || '').toLowerCase())
-  return keys
+  if (e.shiftKey) keys.add('shift');
+
+  // Add the non-modifier key (normalized by code when applicable)
+  const pressedKey = (e.key || '').toLowerCase();
+  if (pressedKey) {
+    if (pressedKey === 'control') keys.add('ctrl');
+    else if (pressedKey === 'meta') keys.add('cmd'); // Map 'meta' to 'cmd'
+    else if (pressedKey === 'alt' && isMac) keys.add('option');
+    else if (pressedKey === 'alt' && !isMac) keys.add('alt');
+    else if (pressedKey === 'shift') keys.add('shift');
+    else {
+      const mapped = codeToKeyMap[e.code] ? String(codeToKeyMap[e.code]).toLowerCase() : pressedKey
+      keys.add(mapped)
+    }
+  }
+
+  return Array.from(keys);
 }
 
 export function isSinglePatternMatch(e, requiredKeys, isMac) {
-  const required = new Set(requiredKeys)
-  const mainKey = getMainKey(required)
-  if (!mainKey) return false
+  const normalize = (k) => (k || '').toLowerCase()
+  const expected = (Array.isArray(requiredKeys) ? requiredKeys : [requiredKeys]).map(normalize)
+  const actual = eventToKeyNames(e, isMac).map(normalize)
 
-  let codeMainKey = e.code
-
-  const codeToKeyMap = {
-    'Minus': '-',
-    'Equal': '=',
-    'BracketLeft': '[',
-    'BracketRight': ']',
-    'Backslash': '\\',
-    'Semicolon': ';',
-    'Quote': '\'',
-    'Comma': ',',
-    'Period': '.', 
-    'Slash': '/',
-    'Backquote': '`',
-    'NumpadSubtract': '-',
-    'NumpadAdd': '+',
-    'NumpadMultiply': '*',
-    'NumpadDivide': '/',
-    'NumpadDecimal': '.', 
-  };
-
-  if (codeToKeyMap[codeMainKey]) {
-    codeMainKey = codeToKeyMap[codeMainKey];
-  } else if (codeMainKey.startsWith('Key')) {
-    codeMainKey = codeMainKey.substring(3)
-  } else if (codeMainKey.startsWith('Digit')) {
-    codeMainKey = codeMainKey.substring(5)
-  } else if (codeMainKey.startsWith('Arrow')) {
-    codeMainKey = 'arrow' + codeMainKey.substring(5)
+  if (expected.length !== actual.length) return false
+  for (let i = 0; i < expected.length; i++) {
+    if (expected[i] !== actual[i]) return false
   }
-  
-  if (codeMainKey.toLowerCase() !== mainKey.toLowerCase()) {
-    return false
-  }
-
-  if (isMac) {
-    return (
-      required.has('cmd') === !!e.metaKey &&
-      required.has('ctrl') === !!e.ctrlKey &&
-      required.has('option') === !!e.altKey &&
-      required.has('shift') === !!e.shiftKey
-    )
-  } else {
-    return (
-      required.has('ctrl') === !!e.ctrlKey &&
-      required.has('alt') === !!e.altKey &&
-      required.has('shift') === !!e.shiftKey
-    )
-  }
+  return true
 }
 
 export function checkAnswer(e, answerPatterns, isMac) {
@@ -94,6 +80,27 @@ export function checkAnswer(e, answerPatterns, isMac) {
     if (isSinglePatternMatch(e, pattern, isMac)) {
       return true
     }
+  }
+  return false
+}
+
+// Prefix matching helpers for per-keydown judgment
+export function isPrefixMatch(e, requiredKeys, isMac) {
+  const normalize = (k) => (k || '').toLowerCase()
+  const expected = (Array.isArray(requiredKeys) ? requiredKeys : [requiredKeys]).map(normalize)
+  const actual = eventToKeyNames(e, isMac).map(normalize)
+
+  if (actual.length > expected.length) return false
+  for (let i = 0; i < actual.length; i++) {
+    if (expected[i] !== actual[i]) return false
+  }
+  return true
+}
+
+export function isAnyPrefixMatch(e, answerPatterns, isMac) {
+  if (!answerPatterns || answerPatterns.length === 0) return false
+  for (const pattern of answerPatterns) {
+    if (isPrefixMatch(e, pattern, isMac)) return true
   }
   return false
 }
