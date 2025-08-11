@@ -24,6 +24,7 @@ const codeToKeyMap = {
   Period: '.',
   Slash: '/',
   Backquote: '`',
+  Space: 'space',
   NumpadSubtract: '-',
   NumpadAdd: '+',
   NumpadMultiply: '*',
@@ -52,6 +53,7 @@ export function eventToKeyNames(e, isMac) {
     else if (pressedKey === 'alt' && isMac) keys.add('option');
     else if (pressedKey === 'alt' && !isMac) keys.add('alt');
     else if (pressedKey === 'shift') keys.add('shift');
+    else if (pressedKey === ' ' || pressedKey === 'spacebar') keys.add('space'); // Normalize spacebar
     else {
       const mapped = codeToKeyMap[e.code] ? String(codeToKeyMap[e.code]).toLowerCase() : pressedKey
       keys.add(mapped)
