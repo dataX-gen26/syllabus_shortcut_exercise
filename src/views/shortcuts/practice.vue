@@ -6,7 +6,12 @@
       h1 練習モード
       p 練習したいショートカットの頻出度を選択してください。
       .frequency-selection
-        button.freq-button(v-for="freq in frequencies" :key="freq" @click="startPractice(freq)") {{ freq }}
+        BCard(
+          v-for="freq in frequencies" :key="freq"
+          title="頻出度: {{ freq }}"
+        )
+          BCardText(マスター必須。頻出のショートカットキーをまずは覚えましょう)
+          BButton.freq-button(@click="startPractice(freq)") {{ freq }}
       router-link.back-button(to="/") モード選択に戻る
 
     //- 演習画面

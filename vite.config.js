@@ -5,7 +5,7 @@ import path from 'path'
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [vue()],
-  base: '/syllabus_shortcut_exercise/',
+  base: '/',
   build: {
     outDir: 'docs',
   },
