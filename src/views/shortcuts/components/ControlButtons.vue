@@ -15,6 +15,8 @@ defineEmits(['startGame', 'revealAnswer'])
 </script>
 
 <style lang="scss" scoped>
+@import '@/assets/_variables.scss';
+
 .control-buttons {
   margin-top: 20px;
   display: flex;
@@ -28,25 +30,25 @@ button {
   cursor: pointer;
   border: none;
   border-radius: 5px;
-  color: white;
-  background-color: #1a73e8;
+  color: $white;
+  background-color: $primary-color;
   transition: background-color 0.3s;
 
   &:hover {
-    background-color: #1558b8;
+    background-color: $primary-color-dark;
   }
 
   &:disabled {
-    background-color: #ccc;
+    background-color: $disabled-color;
     cursor: not-allowed;
   }
 }
 
 #reveal-button {
-  background-color: #f44336;
+  background-color: $danger-color;
 
   &:hover {
-    background-color: #d32f2f;
+    background-color: $danger-color-dark;
   }
 }
 </style>

@@ -30,12 +30,7 @@ export const shortcutsList = [
     frequency: '激高',
     keys: { windows: ['ctrl', 'y'], mac: ['cmd', 'y'] },
   },
-  {
-    id: 6,
-    name: '検索',
-    frequency: '激高',
-    keys: { windows: ['ctrl', 'f'], mac: ['cmd', 'f'] },
-  },
+  { id: 6, name: '検索', frequency: '激高', keys: { windows: ['ctrl', 'f'], mac: ['cmd', 'f'] } },
   {
     id: 7,
     name: '検索と置換',
@@ -96,7 +91,6 @@ export const shortcutsList = [
     frequency: '高',
     keys: { windows: ['shift', 'f11'], mac: ['shift', 'fn', 'f11'] },
   },
-  // Newly added tasks
   { id: 17, name: '太字', frequency: '激高', keys: { windows: ['ctrl', 'b'], mac: ['cmd', 'b'] } },
   { id: 18, name: '下線', frequency: '激高', keys: { windows: ['ctrl', 'u'], mac: ['cmd', 'u'] } },
   { id: 19, name: '斜体', frequency: '激高', keys: { windows: ['ctrl', 'i'], mac: ['cmd', 'i'] } },
@@ -195,5 +189,35 @@ export const shortcutsList = [
     name: '表示形式を指数に設定',
     frequency: '低',
     keys: { windows: ['ctrl', 'shift', '6'], mac: ['ctrl', 'shift', '6'] },
+  },
+  {
+    id: 36,
+    name: '次のシートに移動',
+    frequency: '激高',
+    keys: { windows: ['alt', 'arrowdown'], mac: ['option', 'arrowdown'] },
+  },
+  {
+    id: 37,
+    name: '前のシートに移動',
+    frequency: '激高',
+    keys: { windows: ['alt', 'arrowup'], mac: ['option', 'arrowup'] },
+  },
+  {
+    id: 38,
+    name: 'シートリストを表示',
+    frequency: '高',
+    keys: { windows: ['alt', 'shift', 'k'], mac: ['option', 'shift', 'k'] },
+  },
+  {
+    id: 39,
+    name: 'ハイパーリンクを開く',
+    frequency: '高',
+    keys: { windows: ['alt', 'enter'], mac: ['option', 'enter'] },
+  },
+  {
+    id: 40,
+    name: 'メモを挿入、編集',
+    frequency: '高',
+    keys: { windows: ['shift', 'f2'], mac: ['shift', 'fn', 'f2'] },
   },
 ]

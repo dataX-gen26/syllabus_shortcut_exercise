@@ -19,9 +19,11 @@ defineProps({
 </script>
 
 <style lang="scss" scoped>
+@import '@/assets/_variables.scss';
+
 #correct-count {
   font-size: 22px;
-  color: #1a73e8;
+  color: $primary-color;
   font-weight: bold;
 }
 </style>

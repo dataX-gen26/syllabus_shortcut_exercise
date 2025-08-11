@@ -6,13 +6,24 @@
       h1 練習モード
       p 練習したいショートカットの頻出度を選択してください。
       .frequency-selection
-        button.freq-button(v-for="freq in frequencies" :key="freq" @click="startPractice(freq)") {{ freq }}
+        .mode-card(
+          v-for="freq in frequencies"
+          :key="freq"
+          @click="startPractice(freq)"
+          role="button"
+          tabindex="0"
+          @keydown.enter.prevent="startPractice(freq)"
+          @keydown.space.prevent="startPractice(freq)"
+        )
+          img(:src="levelImage[freq]" alt="頻出度アイコン")
+          .card-title {{ freq }}
       router-link.back-button(to="/") モード選択に戻る
 
     //- 演習画面
     template(v-else)
-      h1 練習モード
-      p 問題の操作を行うショートカットキーを押してください。
+      .title-wrapper(v-if="isPlaying")
+        h1 練習モード
+        p 問題の操作を行うショートカットキーを押してください。
 
       QuizArea(
         :isPlaying="isPlaying",
@@ -28,7 +39,7 @@
 
       //- 終了後のメッセージ
       .end-message(v-if="gameFinished")
-        h2 練習完了！
+        h1 終了！
         p 全10問の練習が終わりました。
         button.restart-button(@click="restart") もう一度同じ頻度で挑戦
         router-link.back-button(to="/practice") 頻度選択に戻る
@@ -56,10 +67,27 @@ import { shortcutsList } from '@/composables/shortcutsList'
 import QuizArea from './components/QuizArea.vue'
 import ControlButtons from './components/ControlButtons.vue'
 import PreviewArea from './components/PreviewArea.vue'
+// 画像を直接インポートしてURLを解決
+import pine from '@/assets/img/pine.png'
+import bamboo from '@/assets/img/bamboo.png'
+import plum from '@/assets/img/plum.png'
+// Added: shared shortcut utilities
+import {
+  isMacPlatform,
+  eventToKeyNames,
+  isShortcutEventMatch,
+  getRequiredKeysForQuestion,
+} from '@/composables/shortcutUtils'
 
 // --- State ---
-const isMac = /Mac|iPod|iPod|iPhone|iPad/.test(navigator.platform)
-const imageModules = import.meta.glob('@/assets/img/*.png', { eager: true })
+const isMac = isMacPlatform()
+
+// グロブのキー不一致で表示されない問題を回避し、直接マッピング
+const levelImage = {
+  低: pine,
+  高: bamboo,
+  激高: plum,
+}
 
 const step = ref('select') // 'select', 'playing', 'finished'
 const frequencies = ref([])
@@ -86,8 +114,7 @@ const currentQuestionId = computed(() => currentQuestion.value?.id || null)
 const questionFrequency = computed(() => currentQuestion.value?.frequency || null)
 
 const currentCorrectKeys = computed(() => {
-  if (!currentQuestion.value) return []
-  return isMac ? currentQuestion.value.keys.mac : currentQuestion.value.keys.windows
+  return getRequiredKeysForQuestion(currentQuestion.value, isMac)
 })
 
 const isLastQuestion = computed(() => {
@@ -135,17 +162,8 @@ function handleKeyDown(e) {
   if (!isPlaying.value || showCorrectAnimation.value) return
   e.preventDefault()
 
-  pressedKeys.value.clear()
-  if (isMac) {
-    if (e.metaKey) pressedKeys.value.add('cmd')
-    if (e.ctrlKey) pressedKeys.value.add('ctrl')
-    if (e.altKey) pressedKeys.value.add('option')
-  } else {
-    if (e.ctrlKey) pressedKeys.value.add('ctrl')
-    if (e.altKey) pressedKeys.value.add('alt')
-  }
-  if (e.shiftKey) pressedKeys.value.add('shift')
-  pressedKeys.value.add(e.key.toLowerCase())
+  // Use shared helper to collect pressed keys
+  pressedKeys.value = new Set(eventToKeyNames(e, isMac))
 
   checkAnswer(e)
 }
@@ -156,28 +174,7 @@ function handleKeyUp(e) {
 }
 
 function checkAnswer(e) {
-  const requiredKeys = new Set(currentCorrectKeys.value)
-  const mainKey = [...requiredKeys].find(
-    (k) => !['ctrl', 'cmd', 'option', 'alt', 'shift'].includes(k)
-  )
-
-  if (e.key.toLowerCase() !== mainKey) return
-
-  let correctModifiers = true
-  if (isMac) {
-    correctModifiers =
-      requiredKeys.has('cmd') === e.metaKey &&
-      requiredKeys.has('ctrl') === e.ctrlKey &&
-      requiredKeys.has('option') === e.altKey &&
-      requiredKeys.has('shift') === e.shiftKey
-  } else {
-    correctModifiers =
-      requiredKeys.has('ctrl') === e.ctrlKey &&
-      requiredKeys.has('alt') === e.altKey &&
-      requiredKeys.has('shift') === e.shiftKey
-  }
-
-  if (correctModifiers) {
+  if (isShortcutEventMatch(e, currentCorrectKeys.value, isMac)) {
     showCorrectAnimation.value = true
     setTimeout(() => {
       if (isLastQuestion.value) {
@@ -229,6 +226,8 @@ onBeforeUnmount(() => {
 </script>
 
 <style lang="scss" scoped>
+@import '@/assets/_variables.scss';
+
 .page-wrapper {
   display: flex;
   flex-direction: column;
@@ -241,31 +240,56 @@ onBeforeUnmount(() => {
 
 .frequency-selection {
   margin: 30px 0;
-  display: flex;
-  justify-content: center;
-  gap: 15px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 20px;
+  width: 100%;
+  max-width: 860px;
 }
 
-.freq-button {
-  padding: 10px 20px;
-  font-size: 16px;
+.mode-card {
+  background: $white;
+  border: 1px solid $gray-200;
+  border-radius: 12px;
+  padding: 20px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
   cursor: pointer;
-  border: 2px solid #1a73e8;
-  border-radius: 5px;
-  color: #1a73e8;
-  background-color: white;
-  transition: all 0.3s;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+  box-shadow: 0 2px 8px $shadow-color-light;
 
   &:hover {
-    background-color: #1a73e8;
-    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px $shadow-color-medium;
+    border-color: $gray-300;
+  }
+
+  &:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px $shadow-color-darker-alt;
+  }
+
+  img {
+    width: 70px;
+    height: auto;
+    object-fit: contain;
+    margin-bottom: 12px;
+  }
+
+  .card-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: $gray-800;
+    letter-spacing: 0.2px;
   }
 }
 
 .back-button {
   display: inline-block;
   margin-top: 20px;
-  color: #555;
+  color: $text-color-medium;
   text-decoration: none;
   &:hover {
     text-decoration: underline;
@@ -275,7 +299,7 @@ onBeforeUnmount(() => {
 .end-message {
   margin-top: 30px;
   h2 {
-    color: #34a853;
+    color: $success-color;
   }
   p {
     margin: 10px 0 20px;
@@ -288,12 +312,12 @@ onBeforeUnmount(() => {
   cursor: pointer;
   border: none;
   border-radius: 5px;
-  color: white;
-  background-color: #1a73e8;
+  color: $white;
+  background-color: $primary-color;
   transition: background-color 0.3s;
 
   &:hover {
-    background-color: #1558b8;
+    background-color: $primary-color-dark;
   }
 }
 </style>

@@ -57,11 +57,17 @@ import ScoreArea from './components/ScoreArea.vue'
 import StatusArea from './components/StatusArea.vue'
 import ControlButtons from './components/ControlButtons.vue'
 import PreviewArea from './components/PreviewArea.vue'
+import {
+  isMacPlatform,
+  eventToKeyNames,
+  isShortcutEventMatch,
+  getRequiredKeysForQuestion,
+} from '@/composables/shortcutUtils'
 
 const TIME_LIMIT = 120 // 制限時間（秒）
 
 const imageModules = import.meta.glob('@/assets/img/*.png', { eager: true })
-const isMac = /Mac|iPod|iPhone|iPad/.test(navigator.platform)
+const isMac = isMacPlatform()
 
 const questions = ref([])
 const currentQuestionIndex = ref(0)
@@ -87,8 +93,7 @@ const currentQuestionId = computed(() => currentQuestion.value?.id || null)
 const questionFrequency = computed(() => currentQuestion.value?.frequency || null)
 
 const currentCorrectKeys = computed(() => {
-  if (!currentQuestion.value) return []
-  return isMac ? currentQuestion.value.keys.mac : currentQuestion.value.keys.windows
+  return getRequiredKeysForQuestion(currentQuestion.value, isMac)
 })
 
 const startButtonText = computed(() => {
@@ -132,17 +137,8 @@ function handleKeyDown(e) {
   if (!isPlaying.value || showCorrectAnimation.value) return
   e.preventDefault()
 
-  pressedKeys.value.clear()
-  if (isMac) {
-    if (e.metaKey) pressedKeys.value.add('cmd')
-    if (e.ctrlKey) pressedKeys.value.add('ctrl')
-    if (e.altKey) pressedKeys.value.add('option')
-  } else {
-    if (e.ctrlKey) pressedKeys.value.add('ctrl')
-    if (e.altKey) pressedKeys.value.add('alt')
-  }
-  if (e.shiftKey) pressedKeys.value.add('shift')
-  pressedKeys.value.add(e.key.toLowerCase())
+  // Use shared helper to collect pressed keys
+  pressedKeys.value = new Set(eventToKeyNames(e, isMac))
 
   checkAnswer(e)
 }
@@ -153,31 +149,8 @@ function handleKeyUp(e) {
 }
 
 function checkAnswer(e) {
-  const requiredKeys = new Set(currentCorrectKeys.value)
-  const mainKey = [...requiredKeys].find(
-    (k) => !['ctrl', 'cmd', 'option', 'alt', 'shift'].includes(k)
-  )
-
-  if (e.key.toLowerCase() !== mainKey) {
-    missCount.value++
-    return
-  }
-
-  let correctModifiers = true
-  if (isMac) {
-    correctModifiers =
-      requiredKeys.has('cmd') === e.metaKey &&
-      requiredKeys.has('ctrl') === e.ctrlKey &&
-      requiredKeys.has('option') === e.altKey &&
-      requiredKeys.has('shift') === e.shiftKey
-  } else {
-    correctModifiers =
-      requiredKeys.has('ctrl') === e.ctrlKey &&
-      requiredKeys.has('alt') === e.altKey &&
-      requiredKeys.has('shift') === e.shiftKey
-  }
-
-  if (correctModifiers) {
+  // Use shared matcher for correctness
+  if (isShortcutEventMatch(e, currentCorrectKeys.value, isMac)) {
     correctCount.value++
     showCorrectAnimation.value = true
     setTimeout(nextQuestion, 500)

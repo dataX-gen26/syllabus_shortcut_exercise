@@ -11,15 +11,17 @@ header.app-header
 <script setup></script>
 
 <style lang="scss" scoped>
+@import '@/assets/_variables.scss';
+
 .app-header {
-  background-color: #46bdc6;
-  color: white;
+  background-color: $primary-color;
+  color: $white;
   padding: 0 2rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
   height: 60px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 4px $shadow-color;
   width: 100%;
   position: fixed;
   top: 0;
@@ -35,7 +37,7 @@ header.app-header
   gap: 0.75rem;
 
   a {
-    color: white;
+    color: $white;
     text-decoration: none;
     font-size: 1.5rem;
     font-weight: bold;
@@ -51,14 +53,14 @@ header.app-header
   font-size: 0.95rem;
   font-weight: 600;
   letter-spacing: 0.02em;
-  background: rgba(255, 255, 255, 0.16);
-  border: 1px solid rgba(255, 255, 255, 0.35);
-  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.1) inset, 0 1px 2px rgba(0, 0, 0, 0.15);
+  background: $subject-label-bg;
+  border: 1px solid $subject-label-border;
+  box-shadow: 0 1px 0 $shadow-color inset, 0 1px 2px $shadow-color-darker;
   margin-left: 0.25rem;
 }
 
 .navigation a {
-  color: white;
+  color: $white;
   text-decoration: none;
   margin-left: 1.5rem;
   font-size: 1rem;
@@ -73,20 +75,4 @@ header.app-header
     text-decoration: underline;
   }
 }
-
-// Responsive tweaks for very small screens
-// @media (max-width: 600px) {
-//   .app-header {
-//     padding: 0 1rem;
-//   }
-//   .navigation a {
-//     margin-left: 1rem;
-//     font-size: 0.95rem;
-//   }
-//   #subject-label {
-//     height: 28px;
-//     font-size: 0.85rem;
-//     padding: 0 0.6rem;
-//   }
-// }
 </style>

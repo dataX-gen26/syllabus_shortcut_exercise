@@ -1,0 +1,64 @@
+// =====================================================
+// Global SCSS Variables
+// 見通しの良い分類（Base / Palette / Text / Surfaces / Border / Shadow / State）
+// =====================================================
+
+// --------------------
+// Base Colors / Grays
+// --------------------
+$white: #ffffff;
+$gray-200: #e5e7eb;
+$gray-300: #d1d5db;
+$gray-800: #1f2937;
+
+// --------------------
+// Brand / Semantic Palette
+// --------------------
+$primary-color: #46bdc6;
+$primary-color-dark: #3a9ca3;
+
+$success-color: #34a853;
+$success-color-dark: #2c8f45;
+
+$danger-color: #f44336;
+$danger-color-dark: #d32f2f;
+
+$disabled-color: #ccc;
+
+// --------------------
+// Text Colors
+// --------------------
+$text-color: #333; // 基本文字色
+$text-color-medium: #555; // 中間トーン
+$text-color-light: #666; // サブテキスト
+
+// --------------------
+// Surfaces / Backgrounds
+// --------------------
+$background-color: #f0f2f5; // アプリ全体の背景
+$container-bg: $white; // コンテナの背景
+$light-gray-bg: #f0f0f0; // セクションやブロックの薄い背景
+$key-box-bg: #f9f9f9; // キー表示などのボックス背景
+$correct-bg: #e8f5e9; // 正解表示の背景
+
+$subject-label-bg: rgba(255, 255, 255, 0.16); // ラベル背景
+$subject-label-border: rgba(255, 255, 255, 0.35); // ラベル枠線
+
+// --------------------
+// Borders
+// --------------------
+$border-color: #ddd;
+
+// --------------------
+// Shadows / Elevation
+// --------------------
+$shadow-color-light: rgba(0, 0, 0, 0.04);
+$shadow-color-medium: rgba(0, 0, 0, 0.08);
+$shadow-color-darker-alt: rgba(0, 0, 0, 0.06);
+$shadow-color: rgba(0, 0, 0, 0.1);
+$shadow-color-darker: rgba(0, 0, 0, 0.15);
+
+// --------------------
+// State-only values
+// --------------------
+$correct-color: green; // 正解テキスト・アイコン色

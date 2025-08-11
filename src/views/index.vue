@@ -10,6 +10,8 @@
 <script setup></script>
 
 <style lang="scss" scoped>
+@import '@/assets/_variables.scss';
+
 // .container スタイルは App.vue のグローバルスタイルで定義
 // .wrapper スタイルは不要になったため削除
 
@@ -34,23 +36,23 @@ p {
   padding: 15px 30px;
   font-size: 18px;
   font-weight: bold;
-  color: white;
-  background-color: #1a73e8;
+  color: $white;
+  background-color: $primary-color;
   border: none;
   border-radius: 5px;
   text-decoration: none;
   transition: background-color 0.3s;
 
   &:hover {
-    background-color: #1558b8;
+    background-color: $primary-color-dark;
   }
 }
 
 .mode-button:last-child {
-  background-color: #34a853;
+  background-color: $success-color;
 
   &:hover {
-    background-color: #2c8f45;
+    background-color: $success-color-dark;
   }
 }
 </style>

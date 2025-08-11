@@ -10,11 +10,13 @@ import Header from '@/components/Header.vue'
 </script>
 
 <style lang="scss">
+@import '@/assets/_variables.scss';
+
 body {
   font-family: sans-serif;
   margin: 0;
-  background-color: #f0f2f5;
-  color: #333;
+  background-color: $background-color;
+  color: $text-color;
 }
 
 #app-container {
@@ -36,15 +38,15 @@ body {
 
 .container {
   text-align: center;
-  background-color: white;
+  background-color: $container-bg;
   padding: 20px;
   border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 8px $shadow-color;
   width: 600px;
   max-width: 100%;
 
   h1 {
-    color: #1a73e8;
+    color: $primary-color;
   }
 }
 

@@ -17,13 +17,15 @@ defineProps({
 </script>
 
 <style lang="scss" scoped>
+@import '@/assets/_variables.scss';
+
 .status-area {
   display: flex;
   justify-content: space-around;
   margin: 20px 0;
   padding: 10px;
   font-size: 18px;
-  background-color: #f0f2f5;
+  background-color: $background-color;
   border-radius: 8px;
 }
 </style>

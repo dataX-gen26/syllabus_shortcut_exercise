@@ -46,10 +46,12 @@ function formatKeyForDisplay(key) {
 </script>
 
 <style lang="scss" scoped>
+@import '@/assets/_variables.scss';
+
 #quiz-area {
   margin: 10px;
   padding: 10px;
-  border: 2px solid #ddd;
+  border: 2px solid $border-color;
   border-radius: 8px;
   min-height: 100px;
   display: flex;
@@ -67,14 +69,14 @@ function formatKeyForDisplay(key) {
 
 #frequency {
   font-size: 14px;
-  color: #666;
+  color: $text-color-light;
   position: absolute;
   top: -10px;
   right: -10px;
   padding: 5px 10px;
-  background-color: #f0f0f0;
+  background-color: $light-gray-bg;
   border-radius: 0 8px 0 8px;
-  box-shadow: 0 4px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 4px $shadow-color;
   font-style: italic;
 }
 
@@ -99,7 +101,7 @@ function formatKeyForDisplay(key) {
   transform: translateY(-50%);
   font-size: 20px;
   font-weight: bold;
-  color: green;
+  color: $correct-color;
   margin-right: 15px;
   visibility: hidden;
 
@@ -114,25 +116,25 @@ function formatKeyForDisplay(key) {
   justify-content: center;
 
   &.correct .key-box {
-    border-color: green;
-    background-color: #e8f5e9;
+    border-color: $correct-color;
+    background-color: $correct-bg;
   }
 }
 
 .key-box {
   display: inline-block;
-  border: 2px solid #ccc;
+  border: 2px solid $disabled-color;
   border-radius: 6px;
   padding: 10px 20px;
   min-width: 40px;
   min-height: 30px;
   line-height: 30px;
   text-align: center;
-  background-color: #f9f9f9;
+  background-color: $key-box-bg;
   font-size: 22px;
   font-family: 'Helvetica Neue', Arial, sans-serif;
   font-weight: bold;
-  color: #333;
+  color: $text-color;
   transition: all 0.2s ease;
 }
 
@@ -140,6 +142,6 @@ function formatKeyForDisplay(key) {
   margin: 0 10px;
   font-weight: bold;
   font-size: 24px;
-  color: #555;
+  color: $text-color-medium;
 }
 </style>

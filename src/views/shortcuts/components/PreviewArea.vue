@@ -14,6 +14,8 @@ defineProps({
 </script>
 
 <style lang="scss" scoped>
+@import '@/assets/_variables.scss';
+
 #preview-area {
   display: flex;
   align-items: center;
@@ -27,9 +29,9 @@ defineProps({
     img {
       width: 400px;
       height: auto;
-      border: 2px solid #ffffff;
+      border: 2px solid $white;
       border-radius: 15px;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 4px 8px $shadow-color;
     }
 
     .arrow {
