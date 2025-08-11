@@ -36,7 +36,6 @@ export function isSinglePatternMatch(e, requiredKeys, isMac) {
   const mainKey = getMainKey(required)
   if (!mainKey) return false
 
-  // Use `e.code` to avoid issues with dead keys on macOS (`e.key` becomes 'Dead')
   let codeMainKey = e.code
   if (codeMainKey.startsWith('Key')) {
     codeMainKey = codeMainKey.substring(3)
@@ -50,7 +49,6 @@ export function isSinglePatternMatch(e, requiredKeys, isMac) {
     return false
   }
 
-  // Check modifiers
   if (isMac) {
     return (
       required.has('cmd') === !!e.metaKey &&
@@ -67,20 +65,15 @@ export function isSinglePatternMatch(e, requiredKeys, isMac) {
   }
 }
 
-// Formats a single step of a shortcut pattern for display.
+// Formats a single pattern for display.
 function formatStep(stepKeys) {
   return stepKeys
     .map((key) => key.charAt(0).toUpperCase() + key.slice(1))
     .join(' + ')
 }
 
-// Formats a single answer pattern (which can have multiple steps).
-function formatPattern(pattern) {
-  return pattern.map(formatStep).join(' → ')
-}
-
 // Formats all answer patterns for a question, including alternatives.
 export function formatAnswerKeys(answerPatterns) {
   if (!answerPatterns || answerPatterns.length === 0) return ''
-  return answerPatterns.map(formatPattern).join(' / ')
+  return answerPatterns.map(formatStep).join(' / ')
 }

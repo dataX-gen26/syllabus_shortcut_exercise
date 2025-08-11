@@ -21,7 +21,6 @@ const props = defineProps({
   currentCorrectKeys: Array,
   isMac: Boolean,
   pressedKeys: Set,
-  // activePatternIndex and currentStepIndex are no longer needed for display logic
 })
 
 function formatKeyForDisplay(key) {
@@ -53,34 +52,25 @@ const formattedAnswer = computed(() => {
     }
 
     html += '<div class="pattern-group">'
-    pattern.forEach((step, stepIndex) => {
-      if (stepIndex > 0) {
-        html += '<span class="separator">→</span>'
+    pattern.forEach((key, keyIndex) => {
+      if (keyIndex > 0) {
+        html += '<span class="plus">+</span>'
       }
 
-      html += '<div class="step-group">'
-      step.forEach((key, keyIndex) => {
-        if (keyIndex > 0) {
-          html += '<span class="plus">+</span>'
-        }
+      let keyContent = '&nbsp;'
+      let isHighlighted = false
 
-        let keyContent = '&nbsp;'
-        let isHighlighted = false
+      if (props.showCorrectAnimation || props.isRevealAnswer) {
+        isHighlighted = true
+      } else if (props.pressedKeys && props.pressedKeys.has(key)) {
+        isHighlighted = true
+      }
 
-        // Display logic now only depends on pressedKeys or final state
-        if (props.showCorrectAnimation || props.isRevealAnswer) {
-          isHighlighted = true
-        } else if (props.pressedKeys && props.pressedKeys.has(key)) {
-          isHighlighted = true
-        }
+      if (isHighlighted) {
+        keyContent = formatKeyForDisplay(key)
+      }
 
-        if (isHighlighted) {
-          keyContent = formatKeyForDisplay(key)
-        }
-
-        html += `<span class="key-box ${isHighlighted ? 'filled' : ''}">${keyContent}</span>`
-      })
-      html += '</div>' // .step-group
+      html += `<span class="key-box ${isHighlighted ? 'filled' : ''}">${keyContent}</span>`
     })
     html += '</div>' // .pattern-group
   })
@@ -162,11 +152,6 @@ const formattedAnswer = computed(() => {
   gap: 10px;
 
   :deep(.pattern-group) {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-  :deep(.step-group) {
     display: flex;
     align-items: center;
     gap: 5px;

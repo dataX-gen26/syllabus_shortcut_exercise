@@ -82,9 +82,6 @@ const showCorrectAnimation = ref(false)
 const isRevealAnswer = ref(false)
 
 const pressedKeys = ref(new Set())
-const activePatternIndex = ref(-1)
-const currentStepIndex = ref(0)
-let resetTimer = null
 
 const currentQuestion = computed(() => {
   if (!questions.value.length) return null
@@ -113,7 +110,7 @@ function startGame() {
   revealCount.value = 0
   correctCount.value = 0
   timer.value = TIME_LIMIT
-  resetState()
+  pressedKeys.value.clear()
   questions.value = shuffle([...shortcutsList])
   currentQuestionIndex.value = 0
   startTimer()
@@ -136,35 +133,13 @@ function handleKeyDown(e) {
   if (!isPlaying.value || showCorrectAnimation.value) return
   e.preventDefault()
   pressedKeys.value = new Set(eventToKeyNames(e, isMac))
-  clearTimeout(resetTimer)
 
   const answerPatterns = currentCorrectKeys.value
   if (!answerPatterns || answerPatterns.length === 0) return
 
-  if (activePatternIndex.value !== -1) {
-    const currentPattern = answerPatterns[activePatternIndex.value]
-    const nextStepKeys = currentPattern[currentStepIndex.value]
-    if (isSinglePatternMatch(e, nextStepKeys, isMac)) {
-      currentStepIndex.value++
-      if (currentStepIndex.value >= currentPattern.length) {
-        handleCorrectAnswer()
-      } else {
-        resetTimer = setTimeout(resetState, 1500)
-      }
-      return
-    }
-  }
-
-  for (let i = 0; i < answerPatterns.length; i++) {
-    const firstStepKeys = answerPatterns[i][0]
-    if (isSinglePatternMatch(e, firstStepKeys, isMac)) {
-      if (answerPatterns[i].length === 1) {
-        handleCorrectAnswer()
-      } else {
-        activePatternIndex.value = i
-        currentStepIndex.value = 1
-        resetTimer = setTimeout(resetState, 1500)
-      }
+  for (const pattern of answerPatterns) {
+    if (isSinglePatternMatch(e, pattern, isMac)) {
+      handleCorrectAnswer()
       return
     }
   }
@@ -172,16 +147,10 @@ function handleKeyDown(e) {
 
 function handleKeyUp() {
   if (showCorrectAnimation.value) return
-  // A simple reset on keyup is easier to manage than tracking individual key releases.
-  // This means combos must be pressed more or less simultaneously.
-  resetTimer = setTimeout(() => {
+  // A short delay to prevent keys from disappearing too quickly
+  setTimeout(() => {
       pressedKeys.value.clear()
-      // If a sequence was started but not completed, releasing keys resets it.
-      if(activePatternIndex.value !== -1) {
-          resetState()
-          missCount.value++
-      }
-  }, 100) // A short delay to allow for slight async in key presses
+  }, 100)
 }
 
 function handleCorrectAnswer() {
@@ -206,16 +175,9 @@ function nextQuestion() {
   } else {
     currentQuestionIndex.value++
   }
-  resetState()
+  pressedKeys.value.clear()
   showCorrectAnimation.value = false
   isRevealAnswer.value = false
-}
-
-function resetState() {
-  pressedKeys.value.clear()
-  activePatternIndex.value = -1
-  currentStepIndex.value = 0
-  clearTimeout(resetTimer)
 }
 
 function endGame() {
