@@ -25,18 +25,30 @@ const props = defineProps({
 
 function formatKeyForDisplay(key) {
   switch (key) {
-    case 'cmd': return '⌘'
-    case 'ctrl': return props.isMac ? '⌃' : 'Ctrl'
-    case 'option': return '⌥'
-    case 'alt': return 'Alt'
-    case 'shift': return '⇧'
-    case 'enter': return 'Enter'
-    case 'space': return 'Space'
-    case 'arrowup': return '↑'
-    case 'arrowdown': return '↓'
-    case 'arrowleft': return '←'
-    case 'arrowright': return '→'
-    default: return key.toUpperCase()
+    case 'cmd':
+      return '⌘'
+    case 'ctrl':
+      return props.isMac ? '⌃' : 'Ctrl'
+    case 'option':
+      return '⌥'
+    case 'alt':
+      return 'Alt'
+    case 'shift':
+      return '⇧'
+    case 'enter':
+      return 'Enter'
+    case 'space':
+      return 'Space'
+    case 'arrowup':
+      return '↑'
+    case 'arrowdown':
+      return '↓'
+    case 'arrowleft':
+      return '←'
+    case 'arrowright':
+      return '→'
+    default:
+      return key.toUpperCase()
   }
 }
 
@@ -84,7 +96,7 @@ const formattedAnswer = computed(() => {
 
 #quiz-area {
   margin: 10px;
-  padding: 10px;
+  padding: 20px;
   border: 2px solid $border-color;
   border-radius: 8px;
   min-height: 100px;
@@ -198,7 +210,7 @@ const formattedAnswer = computed(() => {
     :deep(.key-box.filled) {
       border-color: $correct-color;
       background-color: $correct-bg;
-      color: $white;
+      color: $text-color;
     }
   }
 }

@@ -4,20 +4,20 @@
     //- モード選択画面
     template(v-if="step === 'select'")
       h1 練習モード
-      p 練習したいショートカットの頻出度を選択してください。
-      .frequency-selection
+      p 練習したいショートカットの難易度を選択してください。
+      .level-selection
         .mode-card(
-          v-for="freq in frequencies"
-          :key="freq"
-          @click="startPractice(freq)"
+          v-for="level in levels"
+          :key="level"
+          @click="startPractice(level)"
           role="button"
           tabindex="0"
-          @keydown.enter.prevent="startPractice(freq)"
-          @keydown.space.prevent="startPractice(freq)"
+          @keydown.enter.prevent="startPractice(level)"
+          @keydown.space.prevent="startPractice(level)"
         )
-          img(:src="levelImage[freq]" alt="頻出度アイコン")
-          .card-title {{ freq }}
-      router-link.back-button(to="/") モード選択に戻る
+          img(:src="levelImage[level]" alt="レベルアイコン")
+          .card-title {{ level }}
+      router-link.basic-button(to="/") モード選択に戻る
 
     //- 演習画面
     template(v-else)
@@ -36,14 +36,17 @@
         :isMac="isMac",
         :pressedKeys="pressedKeys"
       )
+      
 
       //- 終了後のメッセージ
       .end-message(v-if="gameFinished")
         h1 終了！
         p 全10問の練習が終わりました。
-        button.restart-button(@click="restart") もう一度同じ頻度で挑戦
-        router-link.back-button(to="/practice") 頻度選択に戻る
+        .buttons
+          button.basic-button(@click="restart") もう一度挑戦
+          button.basic-button(@click="resetLevel") 難易度選択に戻る
 
+      //- .buttons
       ControlButtons(
         v-if="!gameFinished"
         :isPlaying="isPlaying",
@@ -51,6 +54,10 @@
         startButtonText="やり直す",
         @revealAnswer="revealAnswer"
       )
+      p.end-practice(
+        v-if="isPlaying"
+        @click="resetLevel"
+      ) 終了する
 
   PreviewArea(
     v-if="step === 'playing'"
@@ -78,11 +85,11 @@ import {
 } from '@/composables/shortcutUtils'
 
 const isMac = isMacPlatform()
-const levelImage = { 低: pine, 高: bamboo, 激高: plum }
+const levelImage = { 上級: pine, 中級: bamboo, 初級: plum }
 
 const step = ref('select')
-const frequencies = ref([])
-const selectedFrequency = ref(null)
+const levels = ['初級', '中級', '上級']
+const selectedLevel = ref(null)
 
 const questions = ref([])
 const currentQuestionIndex = ref(0)
@@ -122,9 +129,9 @@ function shuffle(array) {
   return array
 }
 
-function startPractice(frequency) {
-  selectedFrequency.value = frequency
-  const filtered = shortcutsList.filter((q) => q.frequency === frequency)
+function startPractice(level) {
+  selectedLevel.value = level
+  const filtered = shortcutsList.filter((q) => q.level === level)
   questions.value = shuffle(filtered).slice(0, 10)
 
   if (questions.value.length > 0) {
@@ -141,8 +148,8 @@ function startPractice(frequency) {
 }
 
 function restart() {
-  if (selectedFrequency.value) {
-    startPractice(selectedFrequency.value)
+  if (selectedLevel.value) {
+    startPractice(selectedLevel.value)
   }
 }
 
@@ -165,7 +172,7 @@ function handleKeyDown(e) {
 function handleKeyUp() {
   if (showCorrectAnimation.value) return
   setTimeout(() => {
-      pressedKeys.value.clear()
+    pressedKeys.value.clear()
   }, 100)
 }
 
@@ -206,9 +213,19 @@ function endGame() {
   step.value = 'finished'
 }
 
+function resetLevel() {
+  selectedLevel.value = null
+  questions.value = []
+  currentQuestionIndex.value = 0
+  pressedKeys.value.clear()
+  isPlaying.value = false
+  gameFinished.value = false
+  showCorrectAnimation.value = false
+  isRevealAnswer.value = false
+  step.value = 'select'
+}
+
 onMounted(() => {
-  const uniqueFrequencies = [...new Set(shortcutsList.map((item) => item.frequency))]
-  frequencies.value = uniqueFrequencies
   document.addEventListener('keydown', handleKeyDown)
   document.addEventListener('keyup', handleKeyUp)
 })
@@ -230,7 +247,7 @@ onBeforeUnmount(() => {
   height: 100%;
 }
 
-.frequency-selection {
+.level-selection {
   margin: 30px 0;
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -278,16 +295,6 @@ onBeforeUnmount(() => {
   }
 }
 
-.back-button {
-  display: inline-block;
-  margin-top: 20px;
-  color: $text-color-medium;
-  text-decoration: none;
-  &:hover {
-    text-decoration: underline;
-  }
-}
-
 .end-message {
   margin-top: 30px;
   h1 {
@@ -298,7 +305,14 @@ onBeforeUnmount(() => {
   }
 }
 
-.restart-button {
+.buttons {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  height: fit-content;
+}
+
+.basic-button {
   padding: 10px 15px;
   font-size: 16px;
   cursor: pointer;
@@ -310,6 +324,14 @@ onBeforeUnmount(() => {
 
   &:hover {
     background-color: $primary-color-dark;
+  }
+}
+
+.end-practice {
+  cursor: pointer;
+
+  &:hover {
+    color: $primary-color-dark;
   }
 }
 </style>

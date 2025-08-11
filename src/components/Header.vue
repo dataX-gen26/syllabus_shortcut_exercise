@@ -6,6 +6,7 @@ header.app-header
   nav.navigation
     router-link(to="/practice") 練習モード
     router-link(to="/test") テストモード
+    router-link(to="/list") ショートカット一覧
 </template>
 
 <script setup></script>

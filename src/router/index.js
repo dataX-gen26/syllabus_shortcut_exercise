@@ -18,6 +18,11 @@ const router = createRouter({
       name: 'practice',
       component: () => import('../views/shortcuts/practice.vue'),
     },
+    {
+      path: '/list',
+      name: 'list',
+      component: () => import('../views/shortcuts/list.vue'),
+    },
   ],
 })
 
