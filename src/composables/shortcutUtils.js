@@ -7,11 +7,11 @@ export function isMacPlatform() {
 }
 
 export function getRequiredKeysForQuestion(question, isMac) {
-  if (!question) return []
+  if (!question || !question.keys) return []
   return isMac ? question.keys.mac : question.keys.windows
 }
 
-export function getMainKey(requiredKeys) {
+function getMainKey(requiredKeys) {
   const keys = Array.isArray(requiredKeys) ? requiredKeys : [...requiredKeys]
   return keys.find((k) => !MODIFIER_KEYS.includes(k)) || null
 }
@@ -31,17 +31,26 @@ export function eventToKeyNames(e, isMac) {
   return keys
 }
 
-export function isShortcutEventMatch(e, requiredKeys, isMac) {
+export function isSinglePatternMatch(e, requiredKeys, isMac) {
   const required = new Set(requiredKeys)
   const mainKey = getMainKey(required)
   if (!mainKey) return false
 
-  // Main key must match
-  if ((e.key || '').toLowerCase() !== mainKey) {
+  // Use `e.code` to avoid issues with dead keys on macOS (`e.key` becomes 'Dead')
+  let codeMainKey = e.code
+  if (codeMainKey.startsWith('Key')) {
+    codeMainKey = codeMainKey.substring(3)
+  } else if (codeMainKey.startsWith('Digit')) {
+    codeMainKey = codeMainKey.substring(5)
+  } else if (codeMainKey.startsWith('Arrow')) {
+    codeMainKey = 'arrow' + codeMainKey.substring(5)
+  }
+  
+  if (codeMainKey.toLowerCase() !== mainKey.toLowerCase()) {
     return false
   }
 
-  // Check modifiers; ignore 'fn' as browsers don't expose it
+  // Check modifiers
   if (isMac) {
     return (
       required.has('cmd') === !!e.metaKey &&
@@ -56,4 +65,22 @@ export function isShortcutEventMatch(e, requiredKeys, isMac) {
       required.has('shift') === !!e.shiftKey
     )
   }
+}
+
+// Formats a single step of a shortcut pattern for display.
+function formatStep(stepKeys) {
+  return stepKeys
+    .map((key) => key.charAt(0).toUpperCase() + key.slice(1))
+    .join(' + ')
+}
+
+// Formats a single answer pattern (which can have multiple steps).
+function formatPattern(pattern) {
+  return pattern.map(formatStep).join(' → ')
+}
+
+// Formats all answer patterns for a question, including alternatives.
+export function formatAnswerKeys(answerPatterns) {
+  if (!answerPatterns || answerPatterns.length === 0) return ''
+  return answerPatterns.map(formatPattern).join(' / ')
 }

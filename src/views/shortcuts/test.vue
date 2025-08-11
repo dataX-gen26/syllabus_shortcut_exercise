@@ -14,12 +14,12 @@
       :showCorrectAnimation="showCorrectAnimation",
       :isRevealAnswer="isRevealAnswer",
       :currentCorrectKeys="currentCorrectKeys",
-      :pressedKeys="pressedKeys",
-      :isMac="isMac"
+      :isMac="isMac",
+      :pressedKeys="pressedKeys"
     )
 
     ScoreArea(
-      v-if="gameFinished"
+      v-if="gameFinished",
       :gameFinished="gameFinished",
       :correctCount="correctCount",
       :missCount="missCount",
@@ -59,22 +59,20 @@ import ControlButtons from './components/ControlButtons.vue'
 import PreviewArea from './components/PreviewArea.vue'
 import {
   isMacPlatform,
-  eventToKeyNames,
-  isShortcutEventMatch,
   getRequiredKeysForQuestion,
+  eventToKeyNames,
+  isSinglePatternMatch,
 } from '@/composables/shortcutUtils'
 
-const TIME_LIMIT = 120 // 制限時間（秒）
+const TIME_LIMIT = 120
 
-const imageModules = import.meta.glob('@/assets/img/*.png', { eager: true })
 const isMac = isMacPlatform()
 
 const questions = ref([])
 const currentQuestionIndex = ref(0)
-const pressedKeys = ref(new Set())
 const missCount = ref(0)
 const revealCount = ref(0)
-const correctCount = ref(0) // 正解数をカウント
+const correctCount = ref(0)
 const timer = ref(TIME_LIMIT)
 let timerInterval = null
 
@@ -82,6 +80,11 @@ const isPlaying = ref(false)
 const gameFinished = ref(false)
 const showCorrectAnimation = ref(false)
 const isRevealAnswer = ref(false)
+
+const pressedKeys = ref(new Set())
+const activePatternIndex = ref(-1)
+const currentStepIndex = ref(0)
+let resetTimer = null
 
 const currentQuestion = computed(() => {
   if (!questions.value.length) return null
@@ -100,9 +103,7 @@ const startButtonText = computed(() => {
   return gameFinished.value ? 'もう一度挑戦する' : 'スタート'
 })
 
-const previewImages = computed(() => {
-  return [] // Preview is disabled for now
-})
+const previewImages = computed(() => [])
 
 function startGame() {
   isPlaying.value = true
@@ -112,11 +113,9 @@ function startGame() {
   revealCount.value = 0
   correctCount.value = 0
   timer.value = TIME_LIMIT
-  pressedKeys.value.clear()
-
+  resetState()
   questions.value = shuffle([...shortcutsList])
   currentQuestionIndex.value = 0
-
   startTimer()
 }
 
@@ -136,27 +135,59 @@ function stopTimer() {
 function handleKeyDown(e) {
   if (!isPlaying.value || showCorrectAnimation.value) return
   e.preventDefault()
-
-  // Use shared helper to collect pressed keys
   pressedKeys.value = new Set(eventToKeyNames(e, isMac))
+  clearTimeout(resetTimer)
 
-  checkAnswer(e)
-}
+  const answerPatterns = currentCorrectKeys.value
+  if (!answerPatterns || answerPatterns.length === 0) return
 
-function handleKeyUp(e) {
-  if (!isPlaying.value) return
-  pressedKeys.value.clear()
-}
-
-function checkAnswer(e) {
-  // Use shared matcher for correctness
-  if (isShortcutEventMatch(e, currentCorrectKeys.value, isMac)) {
-    correctCount.value++
-    showCorrectAnimation.value = true
-    setTimeout(nextQuestion, 500)
-  } else {
-    missCount.value++
+  if (activePatternIndex.value !== -1) {
+    const currentPattern = answerPatterns[activePatternIndex.value]
+    const nextStepKeys = currentPattern[currentStepIndex.value]
+    if (isSinglePatternMatch(e, nextStepKeys, isMac)) {
+      currentStepIndex.value++
+      if (currentStepIndex.value >= currentPattern.length) {
+        handleCorrectAnswer()
+      } else {
+        resetTimer = setTimeout(resetState, 1500)
+      }
+      return
+    }
   }
+
+  for (let i = 0; i < answerPatterns.length; i++) {
+    const firstStepKeys = answerPatterns[i][0]
+    if (isSinglePatternMatch(e, firstStepKeys, isMac)) {
+      if (answerPatterns[i].length === 1) {
+        handleCorrectAnswer()
+      } else {
+        activePatternIndex.value = i
+        currentStepIndex.value = 1
+        resetTimer = setTimeout(resetState, 1500)
+      }
+      return
+    }
+  }
+}
+
+function handleKeyUp() {
+  if (showCorrectAnimation.value) return
+  // A simple reset on keyup is easier to manage than tracking individual key releases.
+  // This means combos must be pressed more or less simultaneously.
+  resetTimer = setTimeout(() => {
+      pressedKeys.value.clear()
+      // If a sequence was started but not completed, releasing keys resets it.
+      if(activePatternIndex.value !== -1) {
+          resetState()
+          missCount.value++
+      }
+  }, 100) // A short delay to allow for slight async in key presses
+}
+
+function handleCorrectAnswer() {
+  correctCount.value++
+  showCorrectAnimation.value = true
+  setTimeout(nextQuestion, 500)
 }
 
 function revealAnswer() {
@@ -168,19 +199,23 @@ function revealAnswer() {
 }
 
 function nextQuestion() {
-  if (!isPlaying.value) return // ゲームが終了していたら何もしない
-
-  // 問題リストの最後に到達したら、再度シャッフルして最初に戻る
+  if (!isPlaying.value) return
   if (currentQuestionIndex.value >= questions.value.length - 1) {
     questions.value = shuffle([...shortcutsList])
     currentQuestionIndex.value = 0
   } else {
     currentQuestionIndex.value++
   }
-
-  pressedKeys.value.clear()
+  resetState()
   showCorrectAnimation.value = false
   isRevealAnswer.value = false
+}
+
+function resetState() {
+  pressedKeys.value.clear()
+  activePatternIndex.value = -1
+  currentStepIndex.value = 0
+  clearTimeout(resetTimer)
 }
 
 function endGame() {
@@ -217,6 +252,4 @@ onBeforeUnmount(() => {
   align-items: center;
   height: 100%;
 }
-
-// .container スタイルは App.vue で定義
 </style>

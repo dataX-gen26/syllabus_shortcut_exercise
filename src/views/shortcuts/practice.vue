@@ -33,8 +33,8 @@
         :showCorrectAnimation="showCorrectAnimation",
         :isRevealAnswer="isRevealAnswer",
         :currentCorrectKeys="currentCorrectKeys",
-        :pressedKeys="pressedKeys",
-        :isMac="isMac"
+        :isMac="isMac",
+        :pressedKeys="pressedKeys"
       )
 
       //- 終了後のメッセージ
@@ -67,41 +67,35 @@ import { shortcutsList } from '@/composables/shortcutsList'
 import QuizArea from './components/QuizArea.vue'
 import ControlButtons from './components/ControlButtons.vue'
 import PreviewArea from './components/PreviewArea.vue'
-// 画像を直接インポートしてURLを解決
 import pine from '@/assets/img/pine.png'
 import bamboo from '@/assets/img/bamboo.png'
 import plum from '@/assets/img/plum.png'
-// Added: shared shortcut utilities
 import {
   isMacPlatform,
-  eventToKeyNames,
-  isShortcutEventMatch,
   getRequiredKeysForQuestion,
+  eventToKeyNames,
+  isSinglePatternMatch,
 } from '@/composables/shortcutUtils'
 
-// --- State ---
 const isMac = isMacPlatform()
+const levelImage = { 低: pine, 高: bamboo, 激高: plum }
 
-// グロブのキー不一致で表示されない問題を回避し、直接マッピング
-const levelImage = {
-  低: pine,
-  高: bamboo,
-  激高: plum,
-}
-
-const step = ref('select') // 'select', 'playing', 'finished'
+const step = ref('select')
 const frequencies = ref([])
 const selectedFrequency = ref(null)
 
 const questions = ref([])
 const currentQuestionIndex = ref(0)
-const pressedKeys = ref(new Set())
 const isPlaying = ref(false)
 const gameFinished = ref(false)
 const showCorrectAnimation = ref(false)
 const isRevealAnswer = ref(false)
 
-// --- Computed Properties ---
+const pressedKeys = ref(new Set())
+const activePatternIndex = ref(-1)
+const currentStepIndex = ref(0)
+let resetTimer = null
+
 const currentQuestion = computed(() => {
   if (!questions.value.length || currentQuestionIndex.value >= questions.value.length) {
     return null
@@ -121,11 +115,8 @@ const isLastQuestion = computed(() => {
   return currentQuestionIndex.value >= questions.value.length - 1
 })
 
-const previewImages = computed(() => {
-  return [] // Preview is disabled for now
-})
+const previewImages = computed(() => [])
 
-// --- Methods ---
 function shuffle(array) {
   for (let i = array.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1))
@@ -141,7 +132,7 @@ function startPractice(frequency) {
 
   if (questions.value.length > 0) {
     currentQuestionIndex.value = 0
-    pressedKeys.value.clear()
+    resetState()
     isPlaying.value = true
     gameFinished.value = false
     showCorrectAnimation.value = false
@@ -161,29 +152,60 @@ function restart() {
 function handleKeyDown(e) {
   if (!isPlaying.value || showCorrectAnimation.value) return
   e.preventDefault()
-
-  // Use shared helper to collect pressed keys
   pressedKeys.value = new Set(eventToKeyNames(e, isMac))
+  clearTimeout(resetTimer)
 
-  checkAnswer(e)
-}
+  const answerPatterns = currentCorrectKeys.value
+  if (!answerPatterns || answerPatterns.length === 0) return
 
-function handleKeyUp(e) {
-  if (!isPlaying.value) return
-  pressedKeys.value.clear()
-}
-
-function checkAnswer(e) {
-  if (isShortcutEventMatch(e, currentCorrectKeys.value, isMac)) {
-    showCorrectAnimation.value = true
-    setTimeout(() => {
-      if (isLastQuestion.value) {
-        endGame()
+  if (activePatternIndex.value !== -1) {
+    const currentPattern = answerPatterns[activePatternIndex.value]
+    const nextStepKeys = currentPattern[currentStepIndex.value]
+    if (isSinglePatternMatch(e, nextStepKeys, isMac)) {
+      currentStepIndex.value++
+      if (currentStepIndex.value >= currentPattern.length) {
+        handleCorrectAnswer()
       } else {
-        nextQuestion()
+        resetTimer = setTimeout(resetState, 1500)
       }
-    }, 500)
+      return
+    }
   }
+
+  for (let i = 0; i < answerPatterns.length; i++) {
+    const firstStepKeys = answerPatterns[i][0]
+    if (isSinglePatternMatch(e, firstStepKeys, isMac)) {
+      if (answerPatterns[i].length === 1) {
+        handleCorrectAnswer()
+      } else {
+        activePatternIndex.value = i
+        currentStepIndex.value = 1
+        resetTimer = setTimeout(resetState, 1500)
+      }
+      return
+    }
+  }
+}
+
+function handleKeyUp() {
+  if (showCorrectAnimation.value) return
+  resetTimer = setTimeout(() => {
+      pressedKeys.value.clear()
+      if(activePatternIndex.value !== -1) {
+          resetState()
+      }
+  }, 100)
+}
+
+function handleCorrectAnswer() {
+  showCorrectAnimation.value = true
+  setTimeout(() => {
+    if (isLastQuestion.value) {
+      endGame()
+    } else {
+      nextQuestion()
+    }
+  }, 500)
 }
 
 function revealAnswer() {
@@ -201,17 +223,24 @@ function revealAnswer() {
 
 function nextQuestion() {
   currentQuestionIndex.value++
-  pressedKeys.value.clear()
+  resetState()
   showCorrectAnimation.value = false
   isRevealAnswer.value = false
+}
+
+function resetState() {
+  pressedKeys.value.clear()
+  activePatternIndex.value = -1
+  currentStepIndex.value = 0
+  clearTimeout(resetTimer)
 }
 
 function endGame() {
   isPlaying.value = false
   gameFinished.value = true
+  step.value = 'finished'
 }
 
-// --- Lifecycle Hooks ---
 onMounted(() => {
   const uniqueFrequencies = [...new Set(shortcutsList.map((item) => item.frequency))]
   frequencies.value = uniqueFrequencies
@@ -235,8 +264,6 @@ onBeforeUnmount(() => {
   align-items: center;
   height: 100%;
 }
-
-// .container スタイルは App.vue で定義
 
 .frequency-selection {
   margin: 30px 0;
@@ -298,7 +325,7 @@ onBeforeUnmount(() => {
 
 .end-message {
   margin-top: 30px;
-  h2 {
+  h1 {
     color: $success-color;
   }
   p {

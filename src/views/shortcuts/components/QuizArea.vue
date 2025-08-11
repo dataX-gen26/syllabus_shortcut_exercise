@@ -5,15 +5,11 @@
   #feedback-container
     #key-input-container
       span.correct-text(:class="{ visible: showCorrectAnimation && !isRevealAnswer }" v-if="!isRevealAnswer") 正解！🎉
-      #key-input-display(:class="{ correct: showCorrectAnimation }")
-      template(v-for="(key, index) in currentCorrectKeys")
-        span.key-box(v-html="showCorrectAnimation || pressedKeys.has(key) ? formatKeyForDisplay(key) : '&nbsp;'")
-        span.plus(v-if="index < currentCorrectKeys.length - 1") +
+      #key-input-display(:class="{ correct: showCorrectAnimation }" v-html="formattedAnswer")
 </template>
 
 <script setup>
 import { computed } from 'vue'
-import { shortcutsList } from '@/composables/shortcutsList'
 
 const props = defineProps({
   isPlaying: Boolean,
@@ -23,26 +19,74 @@ const props = defineProps({
   showCorrectAnimation: Boolean,
   isRevealAnswer: Boolean,
   currentCorrectKeys: Array,
-  pressedKeys: Set,
   isMac: Boolean,
-})
-
-const shortcuts = computed(() => {
-  return shortcutsList
+  pressedKeys: Set,
+  // activePatternIndex and currentStepIndex are no longer needed for display logic
 })
 
 function formatKeyForDisplay(key) {
   switch (key) {
-    case 'mod':
-      return props.isMac ? '⌘' : 'Ctrl'
-    case 'alt':
-      return props.isMac ? '⌥' : 'Alt'
-    case 'shift':
-      return 'Shift'
-    default:
-      return key.charAt(0).toUpperCase() + key.slice(1)
+    case 'cmd': return '⌘'
+    case 'ctrl': return props.isMac ? '⌃' : 'Ctrl'
+    case 'option': return '⌥'
+    case 'alt': return 'Alt'
+    case 'shift': return '⇧'
+    case 'enter': return 'Enter'
+    case 'space': return 'Space'
+    case 'arrowup': return '↑'
+    case 'arrowdown': return '↓'
+    case 'arrowleft': return '←'
+    case 'arrowright': return '→'
+    default: return key.toUpperCase()
   }
 }
+
+const formattedAnswer = computed(() => {
+  const answerPatterns = props.currentCorrectKeys || []
+  if (answerPatterns.length === 0) return ''
+
+  let html = ''
+
+  answerPatterns.forEach((pattern, patternIndex) => {
+    if (patternIndex > 0) {
+      html += '<span class="separator">/</span>'
+    }
+
+    html += '<div class="pattern-group">'
+    pattern.forEach((step, stepIndex) => {
+      if (stepIndex > 0) {
+        html += '<span class="separator">→</span>'
+      }
+
+      html += '<div class="step-group">'
+      step.forEach((key, keyIndex) => {
+        if (keyIndex > 0) {
+          html += '<span class="plus">+</span>'
+        }
+
+        let keyContent = '&nbsp;'
+        let isHighlighted = false
+
+        // Display logic now only depends on pressedKeys or final state
+        if (props.showCorrectAnimation || props.isRevealAnswer) {
+          isHighlighted = true
+        } else if (props.pressedKeys && props.pressedKeys.has(key)) {
+          isHighlighted = true
+        }
+
+        if (isHighlighted) {
+          keyContent = formatKeyForDisplay(key)
+        }
+
+        html += `<span class="key-box ${isHighlighted ? 'filled' : ''}">${keyContent}</span>`
+      })
+      html += '</div>' // .step-group
+    })
+    html += '</div>' // .pattern-group
+  })
+
+  return html
+})
 </script>
 
 <style lang="scss" scoped>
@@ -114,34 +158,63 @@ function formatKeyForDisplay(key) {
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
 
-  &.correct .key-box {
-    border-color: $correct-color;
-    background-color: $correct-bg;
+  :deep(.pattern-group) {
+    display: flex;
+    align-items: center;
+    gap: 10px;
   }
-}
+  :deep(.step-group) {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
 
-.key-box {
-  display: inline-block;
-  border: 2px solid $disabled-color;
-  border-radius: 6px;
-  padding: 10px 20px;
-  min-width: 40px;
-  min-height: 30px;
-  line-height: 30px;
-  text-align: center;
-  background-color: $key-box-bg;
-  font-size: 22px;
-  font-family: 'Helvetica Neue', Arial, sans-serif;
-  font-weight: bold;
-  color: $text-color;
-  transition: all 0.2s ease;
-}
+  :deep(.key-box) {
+    display: inline-block;
+    border: 2px solid $disabled-color;
+    border-radius: 6px;
+    padding: 10px 20px;
+    min-width: 40px;
+    min-height: 30px;
+    line-height: 30px;
+    text-align: center;
+    background-color: $key-box-bg;
+    font-size: 22px;
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-weight: bold;
+    color: $text-color-light;
+    transition: all 0.2s ease;
 
-.plus {
-  margin: 0 10px;
-  font-weight: bold;
-  font-size: 24px;
-  color: $text-color-medium;
+    &.filled {
+      background-color: $white;
+      border-color: $text-color;
+      color: $text-color;
+    }
+  }
+
+  :deep(.plus) {
+    margin: 0 5px;
+    font-weight: bold;
+    font-size: 24px;
+    color: $text-color-medium;
+  }
+
+  :deep(.separator) {
+    margin: 0 10px;
+    font-weight: bold;
+    font-size: 24px;
+    color: $text-color-light;
+  }
+
+  &.correct {
+    :deep(.key-box.filled) {
+      border-color: $correct-color;
+      background-color: $correct-bg;
+      color: $white;
+    }
+  }
 }
 </style>
