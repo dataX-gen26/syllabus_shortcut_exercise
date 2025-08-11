@@ -20,8 +20,7 @@ body {
 #app-container {
   display: flex;
   flex-direction: column;
-  height: 90vh;
-  box-sizing: border-box;
+  height: 100vh;
 }
 
 .main-content {
