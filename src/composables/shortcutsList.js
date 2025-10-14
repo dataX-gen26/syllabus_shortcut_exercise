@@ -2,7 +2,7 @@
 export const shortcutsList = [
   {
     id: 1,
-    name: '列を選択',
+    name: '列を選択する',
     category: '一般的な操作',
     frequency: '激高',
     level: '初級',
@@ -18,7 +18,7 @@ export const shortcutsList = [
   },
   {
     id: 3,
-    name: 'すべて選択',
+    name: 'すべて選択する',
     category: '一般的な操作',
     frequency: '激高',
     level: '初級',
@@ -42,7 +42,7 @@ export const shortcutsList = [
   },
   {
     id: 6,
-    name: '検索',
+    name: '検索する',
     category: '一般的な操作',
     frequency: '激高',
     level: '初級',
@@ -50,7 +50,7 @@ export const shortcutsList = [
   },
   {
     id: 7,
-    name: '検索と置換',
+    name: '検索して置換する',
     category: '一般的な操作',
     frequency: '激高',
     level: '初級',
@@ -58,7 +58,7 @@ export const shortcutsList = [
   },
   {
     id: 8,
-    name: '範囲へコピー',
+    name: '範囲へコピーする',
     category: '一般的な操作',
     frequency: '激高',
     level: '初級',
@@ -66,7 +66,7 @@ export const shortcutsList = [
   },
   {
     id: 9,
-    name: '下方向へコピー',
+    name: '下方向へコピーする',
     category: '一般的な操作',
     frequency: '高',
     level: '中級',
@@ -74,7 +74,7 @@ export const shortcutsList = [
   },
   {
     id: 10,
-    name: '右方向へコピー',
+    name: '右方向へコピーする',
     category: '一般的な操作',
     frequency: '高',
     level: '中級',
@@ -82,7 +82,7 @@ export const shortcutsList = [
   },
   {
     id: 11,
-    name: 'コピー',
+    name: 'コピーする',
     category: '一般的な操作',
     frequency: '激高',
     level: '初級',
@@ -90,7 +90,7 @@ export const shortcutsList = [
   },
   {
     id: 12,
-    name: '切り取り',
+    name: '切り取る',
     category: '一般的な操作',
     frequency: '激高',
     level: '初級',
@@ -98,7 +98,7 @@ export const shortcutsList = [
   },
   {
     id: 13,
-    name: '貼り付け',
+    name: '貼り付ける',
     category: '一般的な操作',
     frequency: '激高',
     level: '初級',
@@ -106,7 +106,7 @@ export const shortcutsList = [
   },
   {
     id: 14,
-    name: '値のみ貼り付け',
+    name: '値のみ貼り付ける',
     category: '一般的な操作',
     frequency: '激高',
     level: '初級',
@@ -114,7 +114,7 @@ export const shortcutsList = [
   },
   {
     id: 15,
-    name: '一般的なキーボード ショートカットを表示',
+    name: 'ショートカット一覧を表示する',
     category: '一般的な操作',
     frequency: '低',
     level: '上級',
@@ -122,7 +122,7 @@ export const shortcutsList = [
   },
   {
     id: 16,
-    name: '新しいシートを挿入',
+    name: '新しいシートを挿入する',
     category: '一般的な操作',
     frequency: '高',
     level: '中級',
@@ -130,7 +130,7 @@ export const shortcutsList = [
   },
   {
     id: 17,
-    name: '太字',
+    name: '太字にする',
     category: 'セルの書式設定',
     frequency: '激高',
     level: '初級',
@@ -138,7 +138,7 @@ export const shortcutsList = [
   },
   {
     id: 18,
-    name: '下線',
+    name: '下線を引く',
     category: 'セルの書式設定',
     frequency: '激高',
     level: '初級',
@@ -146,7 +146,7 @@ export const shortcutsList = [
   },
   {
     id: 19,
-    name: '斜体',
+    name: '斜体にする',
     category: 'セルの書式設定',
     frequency: '激高',
     level: '初級',
@@ -154,7 +154,7 @@ export const shortcutsList = [
   },
   {
     id: 20,
-    name: '取り消し線',
+    name: '取り消し線を引く',
     category: 'セルの書式設定',
     frequency: '低',
     level: '上級',
@@ -165,7 +165,7 @@ export const shortcutsList = [
   },
   {
     id: 21,
-    name: '中央揃え',
+    name: '中央揃えにする',
     category: 'セルの書式設定',
     frequency: '高',
     level: '中級',
@@ -173,7 +173,7 @@ export const shortcutsList = [
   },
   {
     id: 22,
-    name: '左揃え',
+    name: '左揃えにする',
     category: 'セルの書式設定',
     frequency: '高',
     level: '中級',
@@ -181,7 +181,7 @@ export const shortcutsList = [
   },
   {
     id: 23,
-    name: '右揃え',
+    name: '右揃えにする',
     category: 'セルの書式設定',
     frequency: '高',
     level: '中級',
@@ -189,7 +189,7 @@ export const shortcutsList = [
   },
   {
     id: 24,
-    name: '上枠線を適用',
+    name: '上枠線を引く',
     category: 'セルの書式設定',
     frequency: '高',
     level: '中級',
@@ -197,7 +197,7 @@ export const shortcutsList = [
   },
   {
     id: 25,
-    name: '右枠線を適用',
+    name: '右枠線を引く',
     category: 'セルの書式設定',
     frequency: '高',
     level: '中級',
@@ -205,7 +205,7 @@ export const shortcutsList = [
   },
   {
     id: 26,
-    name: '下枠線を適用',
+    name: '下枠線を引く',
     category: 'セルの書式設定',
     frequency: '高',
     level: '中級',
@@ -213,7 +213,7 @@ export const shortcutsList = [
   },
   {
     id: 27,
-    name: '左枠線を適用',
+    name: '左枠線を引く',
     category: 'セルの書式設定',
     frequency: '高',
     level: '中級',
@@ -221,7 +221,7 @@ export const shortcutsList = [
   },
   {
     id: 28,
-    name: '枠線を削除',
+    name: '枠線を削除する',
     category: 'セルの書式設定',
     frequency: '高',
     level: '中級',
@@ -229,7 +229,7 @@ export const shortcutsList = [
   },
   {
     id: 29,
-    name: 'リンクを挿入',
+    name: 'リンクを挿入する',
     category: 'セルの書式設定',
     frequency: '激高',
     level: '初級',
@@ -285,7 +285,7 @@ export const shortcutsList = [
   },
   {
     id: 36,
-    name: '次のシートに移動',
+    name: '次のシートに移動する',
     category: 'スプレッドシートの操作',
     frequency: '激高',
     level: '初級',
@@ -293,7 +293,7 @@ export const shortcutsList = [
   },
   {
     id: 37,
-    name: '前のシートに移動',
+    name: '前のシートに移動する',
     category: 'スプレッドシートの操作',
     frequency: '激高',
     level: '初級',
@@ -301,7 +301,7 @@ export const shortcutsList = [
   },
   {
     id: 38,
-    name: 'シートリストを表示',
+    name: 'シート一覧を表示する',
     category: 'スプレッドシートの操作',
     frequency: '高',
     level: '中級',
@@ -317,7 +317,7 @@ export const shortcutsList = [
   },
   {
     id: 40,
-    name: 'メモを挿入、編集',
+    name: 'メモを挿入・編集する',
     category: 'スプレッドシートの操作',
     frequency: '高',
     level: '中級',
@@ -325,7 +325,7 @@ export const shortcutsList = [
   },
   {
     id: 41,
-    name: '行を上に挿入',
+    name: '行を上に挿入する',
     category: '行と列の追加や変更',
     frequency: '激高',
     level: '初級',
@@ -339,15 +339,21 @@ export const shortcutsList = [
   },
   {
     id: 42,
-    name: '列を左に挿入',
+    name: '列を左に挿入する',
     category: '行と列の追加や変更',
     frequency: '激高',
     level: '初級',
-    keys: { windows: [['ctrl', 'alt', '=']], mac: [['cmd', 'option', '=']] },
+    keys: {
+      windows: [['ctrl', 'alt', '=']],
+      mac: [
+        ['cmd', 'option', '='],
+        ['cmd', 'option', 'shift', '-'],
+      ],
+    },
   },
   {
     id: 43,
-    name: '行を削除',
+    name: '行を削除する',
     category: '行と列の追加や変更',
     frequency: '激高',
     level: '初級',
@@ -355,7 +361,7 @@ export const shortcutsList = [
   },
   {
     id: 44,
-    name: '列を削除',
+    name: '列を削除する',
     category: '行と列の追加や変更',
     frequency: '激高',
     level: '初級',
@@ -363,7 +369,7 @@ export const shortcutsList = [
   },
   {
     id: 45,
-    name: '行を非表示',
+    name: '行を非表示にする',
     category: '行と列の追加や変更',
     frequency: '中',
     level: '上級',
@@ -371,7 +377,7 @@ export const shortcutsList = [
   },
   {
     id: 46,
-    name: '行を再表示',
+    name: '行を再表示する',
     category: '行と列の追加や変更',
     frequency: '中',
     level: '上級',
@@ -379,7 +385,7 @@ export const shortcutsList = [
   },
   {
     id: 47,
-    name: '列を非表示',
+    name: '列を非表示にする',
     category: '行と列の追加や変更',
     frequency: '中',
     level: '上級',
@@ -387,7 +393,7 @@ export const shortcutsList = [
   },
   {
     id: 48,
-    name: '列を再表示',
+    name: '列を再表示する',
     category: '行と列の追加や変更',
     frequency: '中',
     level: '上級',
@@ -395,7 +401,7 @@ export const shortcutsList = [
   },
   {
     id: 49,
-    name: '行または列をグループ化',
+    name: '行または列をグループ化する',
     category: '行と列の追加や変更',
     frequency: '高',
     level: '中級',
@@ -403,7 +409,7 @@ export const shortcutsList = [
   },
   {
     id: 50,
-    name: '行または列のグループ化を解除',
+    name: '行または列のグループ化を解除する',
     category: '行と列の追加や変更',
     frequency: '高',
     level: '中級',
@@ -411,7 +417,7 @@ export const shortcutsList = [
   },
   {
     id: 51,
-    name: 'グループ化した行または列を展開',
+    name: 'グループ化した行または列を展開する',
     category: '行と列の追加や変更',
     frequency: '高',
     level: '中級',
