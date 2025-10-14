@@ -19,7 +19,7 @@ const codeToKeyMap = {
   BracketRight: ']',
   Backslash: '\\',
   Semicolon: ';',
-  Quote: '\'',
+  Quote: "'",
   Comma: ',',
   Period: '.',
   Slash: '/',
@@ -33,34 +33,35 @@ const codeToKeyMap = {
 }
 
 export function eventToKeyNames(e, isMac) {
-  const keys = new Set(); // Use a Set to avoid duplicates
+  const keys = new Set() // Use a Set to avoid duplicates
 
   if (isMac) {
-    if (e.metaKey) keys.add('cmd');
-    if (e.ctrlKey) keys.add('ctrl');
-    if (e.altKey) keys.add('option');
+    if (e.metaKey) keys.add('cmd')
+    if (e.ctrlKey) keys.add('ctrl')
+    if (e.altKey) keys.add('option')
   } else {
-    if (e.ctrlKey) keys.add('ctrl');
-    if (e.altKey) keys.add('alt');
+    if (e.ctrlKey) keys.add('ctrl')
+    if (e.altKey) keys.add('alt')
   }
-  if (e.shiftKey) keys.add('shift');
+  if (e.shiftKey) keys.add('shift')
 
   // Add the non-modifier key (normalized by code when applicable)
-  const pressedKey = (e.key || '').toLowerCase();
+  const pressedKey = (e.key || '').toLowerCase()
   if (pressedKey) {
-    if (pressedKey === 'control') keys.add('ctrl');
-    else if (pressedKey === 'meta') keys.add('cmd'); // Map 'meta' to 'cmd'
-    else if (pressedKey === 'alt' && isMac) keys.add('option');
-    else if (pressedKey === 'alt' && !isMac) keys.add('alt');
-    else if (pressedKey === 'shift') keys.add('shift');
-    else if (pressedKey === ' ' || pressedKey === 'spacebar') keys.add('space'); // Normalize spacebar
+    if (pressedKey === 'control') keys.add('ctrl')
+    else if (pressedKey === 'meta') keys.add('cmd') // Map 'meta' to 'cmd'
+    else if (pressedKey === 'alt' && isMac) keys.add('option')
+    else if (pressedKey === 'alt' && !isMac) keys.add('alt')
+    else if (pressedKey === 'shift') keys.add('shift')
+    else if (pressedKey === ' ' || pressedKey === 'spacebar')
+      keys.add('space') // Normalize spacebar
     else {
       const mapped = codeToKeyMap[e.code] ? String(codeToKeyMap[e.code]).toLowerCase() : pressedKey
       keys.add(mapped)
     }
   }
 
-  return Array.from(keys);
+  return Array.from(keys)
 }
 
 export function isSinglePatternMatch(e, requiredKeys, isMac) {
@@ -109,9 +110,7 @@ export function isAnyPrefixMatch(e, answerPatterns, isMac) {
 
 // Formats a single pattern for display.
 function formatStep(stepKeys) {
-  return stepKeys
-    .map((key) => key.charAt(0).toUpperCase() + key.slice(1))
-    .join(' + ')
+  return stepKeys.map((key) => key.charAt(0).toUpperCase() + key.slice(1)).join(' + ')
 }
 
 // Formats all answer patterns for a question, including alternatives.

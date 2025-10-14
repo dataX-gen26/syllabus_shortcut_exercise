@@ -134,10 +134,18 @@ function stopTimer() {
 }
 
 function handleKeyDown(e) {
+  // Prevent default browser shortcuts when playing
+  if (isPlaying.value) {
+    e.preventDefault()
+  }
+
   if (!isPlaying.value || showCorrectAnimation.value) return
-  e.preventDefault()
+
   const actualKeys = eventToKeyNames(e, isMac)
   pressedKeys.value = new Set(actualKeys)
+
+  // Debug log for troubleshooting
+  console.log('Pressed keys:', actualKeys, 'Expected patterns:', currentCorrectKeys.value)
 
   // Do not count a miss for Shift-only presses
   if (actualKeys.length === 1 && actualKeys[0] === 'shift') {
